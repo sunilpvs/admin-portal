@@ -17,6 +17,6 @@ export const getActivities = (page, limit, module, username, fromDate, toDate) =
 
     if (toDate) params.append("toDate", toDate);
 
-    return axiosInstance.get(`/api/logs/activity?${params.toString()}`);
+    return axiosInstance.get(`/api/logs/activity?type=admin&${params.toString()}`);
 
 };

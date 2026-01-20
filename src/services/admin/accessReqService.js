@@ -24,9 +24,6 @@ export const getPendingAccessRequests = () => {
     return axiosInstance.get(`api/admin/access-request?type=pending`);
 }
 
-export const getVMSAccessStatus = () => {
-    return axiosInstance.get(`auth/access-status.php?type=vms`);
-}
 
 export const getAdminAccessStatus = () => {
     return axiosInstance.get(`auth/access-status.php?type=admin`);
