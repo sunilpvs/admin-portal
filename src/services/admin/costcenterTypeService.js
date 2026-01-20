@@ -9,7 +9,7 @@ export const getPaginatedCostCenterType = (page = 1, limit = 10) => {
 export const getCostCenterTypeById = (id) => {
   return axiosInstance.get(`api/admin/costctype?id=${id}`);
 };
-
+ 
 // Get costcenter type combo list (for dropdowns)
 export const getCostCenterTypeCombo = (fields = ['id', 'cc_type']) => {
   const fieldParams = fields.join(',');
