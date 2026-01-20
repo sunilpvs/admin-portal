@@ -27,7 +27,7 @@ jobs:
       - name: Build React app
         run: CI=false npm run build
 
-            - name: Upload build to server temp
+      - name: Upload build to server temp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.CPANEL_HOST }}
