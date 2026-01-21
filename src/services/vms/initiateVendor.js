@@ -16,6 +16,7 @@ export const getRfqCombo = () => {
     return axiosInstance.get(`api/vms/vendor-initiate?type=combo`);
 };
 
+
 // Add a new RFQ
 export const addRfq = (payload) => {
     return axiosInstance.post(`api/vms/vendor-initiate`, payload);
