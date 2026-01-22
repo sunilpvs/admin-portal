@@ -35,7 +35,7 @@ jobs:
         run: CI=false npm run build
 
       - name: Create Deployment marker file
-        run: echo "${GITHUB_SHA}" > build/.deploy-marker
+        run: echo "${GITHUB_SHA}" > build/.deploy-marker 
 
       - name: Check and Prepare Deployment Directory
         uses: appleboy/ssh-action@v1.0.3
