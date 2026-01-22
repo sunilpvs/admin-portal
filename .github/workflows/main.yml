@@ -79,6 +79,7 @@ jobs:
           username: ${{ secrets.CPANEL_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
           script: |
-            chmod -R 755 /home/$CPANEL_USER/$DEPLOY_DIR
+            DEPLOY_PATH="/home/$CPANEL_USER/$DEPLOY_DIR"
+            chmod -R 755 $DEPLOY_PATH
             echo "Permissions fixed."
             echo "Deployment completed."
