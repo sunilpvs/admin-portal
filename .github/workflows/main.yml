@@ -64,7 +64,7 @@ jobs:
           username: ${{ secrets.CPANEL_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
           script: |
-            DEPLOY_PATH="home/$CPANEL_USER/$DEPLOY_DIR"
+            DEPLOY_PATH="/home/$CPANEL_USER/$DEPLOY_DIR"
             if [ "$(ls -A "$DEPLOY_PATH")" ]; then
               echo "Deployment successful. Files are present in $DEPLOY_PATH"
             else
