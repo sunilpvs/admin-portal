@@ -6,10 +6,12 @@ on:
       - main
       - test
 
-jobs: 
-  deploy: 
+jobs:
+  deploy:
+    if: |
+        !contains(github.event.head_commit.message, '[skip deploy]')
     runs-on: ubuntu-latest
-    
+
     # Set the environment
     environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
@@ -20,18 +22,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-    
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-      
+
       - name: Install Dependencies
         run: npm ci
-       
+
       - name: Build React App
         run: CI=false npm run build
-      
+
       - name: Check and Prepare Deployment Directory
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,7 +48,6 @@ jobs:
             else
               echo "Deployment directory already exists: $DEPLOY_PATH"
             fi
-      
 
       - name: Upload Files to cPanel
         uses: appleboy/scp-action@v0.1.7
@@ -82,7 +83,6 @@ jobs:
             DEPLOY_PATH="/home/${{ secrets.CPANEL_USER }}/${{ secrets.DEPLOY_DIR }}"
             if [ -d "$DEPLOY_PATH" ] && [ ! -z "$DEPLOY_PATH" ] && [ "$DEPLOY_PATH" != "/home//" ]; then
               chmod -R 755 "$DEPLOY_PATH"
-              echo "Deploy path: $DEPLOY_PATH"
               echo "Permissions fixed."
               echo "Deployment completed."
             else
