@@ -1,52 +1,54 @@
-name: Deploy Admin React App (Simple)
+name: Deploy Admin React App
 
 on:
   push:
     branches:
       - main
+      - test
 
-jobs:
-  deploy:
+jobs: 
+  deploy: 
     runs-on: ubuntu-latest
+    
+    # Set the environment
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'test' }}
 
     env:
-      REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+      DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
+      CPANEL_USER: ${{ secrets.CPANEL_USER }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
-
+    
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
-      - name: Install dependencies
+      
+      - name: Install Dependencies
         run: npm ci
-
-      - name: Build React app
+      
+      - name: Build React App
         run: CI=false npm run build
-
-      - name: Upload build to server temp
+      
+      - name: Upload Files to cPanel
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
-          source: "build/"
-          target: "/home/${{ secrets.CPANEL_USER }}/tmp_build"
+          source: build/*
+          target: "/home/${{ secrets.CPANEL_USER }}/$DEPLOY_DIR"
 
-      - name: Deploy build contents directly
+
+      - name: Fix Permissions
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.CPANEL_HOST }}
           username: ${{ secrets.CPANEL_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
           script: |
-            APP_DIR="/home/${{ secrets.CPANEL_USER }}/repositories/pvs/admin.pvs-consultancy.com"
-            TMP_DIR="/home/${{ secrets.CPANEL_USER }}/tmp_build/build"
-
-            rm -rf $APP_DIR/*
-            rsync -av --delete $TMP_DIR/ $APP_DIR/
-            rm -rf /home/${{ secrets.CPANEL_USER }}/tmp_build
-            echo "Deployment completed."
+            chmod -R 755 /home/$CPANEL_USER/$DEPLOY_DIR
+            echo "Permissions fixed."
+            echo "Deployment completed."  
