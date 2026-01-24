@@ -163,7 +163,7 @@ const MyProSidebar = () => {
 
                     {!collapsed && (
                         <Box mb="25px">
-                            <Box
+                           <Box
                                 display="flex"
                                 justifyContent="center"
                                 alignItems="center"
@@ -178,8 +178,8 @@ const MyProSidebar = () => {
                                     alt="profile user"
                                     width="100px"
                                     height="100px"
-                                    src={`data:image/jpeg;base64,${userData?.profile_pic}`}
-                                    style={{ cursor: "pointer", borderRadius: "50%" }}
+                                    src={userData?.profile_pic ? `data:image/jpeg;base64,${userData?.profile_pic}` : "/assets/vms-user-logo.svg"}
+                                    style={{ cursor: "pointer", borderRadius: "50%", objectFit: "cover" }}
                                 />
                             </Box>
                             <Box textAlign="center">
