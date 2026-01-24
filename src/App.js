@@ -36,6 +36,7 @@ import AccessUser from "./pages/usersList/UsersList";
 import AccessRejected from "./pages/accessRequest/AccessRejected";
 import ReqAccess from "./pages/accessRequest/ReqAccess";
 import AccessPending from "./pages/accessRequest/AccessPending";
+import NotFound404 from "./pages/error/404NotFound";
 
 
 const App = () => {
@@ -94,7 +95,7 @@ const AppRoutes = () => (
         </Route>
 
         {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/login" replace={true} />} />
+        <Route path="*" element={<NotFound404 />} />
     </Routes>
 );
 

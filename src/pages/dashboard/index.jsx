@@ -110,7 +110,7 @@ const Dashboard = () => {
         <Grid xs={12} sm={12} md={6} lg={3} xl={3}>
           
           <Box
-            onClick={() => navigate("/access-request")}
+            onClick={() => navigate("/access-requests")}
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
@@ -165,8 +165,6 @@ const Dashboard = () => {
             <StatBox
               title={String(entityCount ?? 0)}
               subtitle="Total Entities"
-              progress="0.80"
-              increase="+43%"
               icon={
                 <TrafficIcon
                   sx={{ color: colors.greenAccent[600], fontSize: "26px" }}

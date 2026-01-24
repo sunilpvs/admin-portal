@@ -127,9 +127,9 @@ const Topbar = () => {
           </IconButton>
 
           {/* Settings */}
-          <IconButton>
+          {/* <IconButton>
             <SettingsOutlinedIcon />
-          </IconButton>
+          </IconButton> */}
 
           {/* User Menu */}
           <IconButton
