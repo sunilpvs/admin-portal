@@ -80,7 +80,7 @@ const Topbar = () => {
     return () => clearInterval(interval);
   }, []);
 
-  return (
+  return ( 
       <Box display="flex" justifyContent="space-between" p={2}>
         {/* Left: Sidebar Toggle + Search */}
         <Box display="flex" alignItems="center">
