@@ -34,6 +34,7 @@ jobs:
       - name: Build React App
         env: 
           REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL }}
+          REACT_APP_FAV_ICON: ${{ vars.REACT_APP_FAV_ICON }}
         run: |
               echo "Building React app with API base URL: $REACT_APP_API_BASE_URL"
               CI=false npm run build
