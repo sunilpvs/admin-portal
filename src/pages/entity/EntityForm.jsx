@@ -23,7 +23,8 @@ const EntityForm = ({ data, add, close, editMode }) => {
     gst_no: "",
     add1: "",
     add2: "",
-    pin: ""
+    pin: "",
+    salutation_name: ""
   });
 
   const [cities, setCities] = useState([]);
@@ -50,7 +51,8 @@ const EntityForm = ({ data, add, close, editMode }) => {
         gst_no: data.gst_no ?? "",
         add1: data.add1 ?? "",
         add2: data.add2 ?? "",
-        pin: data.pin ?? ""
+        pin: data.pin ?? "",
+        salutation_name: data.salutation_name ?? ""
       };
 
       setFormData(normalized);
@@ -109,7 +111,8 @@ const EntityForm = ({ data, add, close, editMode }) => {
       gst_no: formData.gst_no,
       add1: formData.add1,
       add2: formData.add2,
-      pin: formData.pin
+      pin: formData.pin,
+      salutation_name: formData.salutation_name
     };
     add(payload);
   };
@@ -138,6 +141,14 @@ const EntityForm = ({ data, add, close, editMode }) => {
                 value={formData.cin}
                 onChange={handleChange}
                 placeholder="CIN Number"
+                className="form-control mb-2"
+                required
+              />
+              <input
+                name="salutation_name"
+                value={formData.salutation_name}
+                onChange={handleChange}
+                placeholder="Salutation Name"
                 className="form-control mb-2"
                 required
               />
