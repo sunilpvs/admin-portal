@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function DepartmentTable({
   departments,
@@ -15,19 +17,24 @@ function DepartmentTable({
   onSearch,
   searchTerm,
 }) {
- const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" }); // default sort
+  const [sortConfig, setSortConfig] = useState({
+    key: "name",
+    direction: "asc",
+  });
 
-  // Filter cities based on search term
- const filteredDepartments = departments.filter((department) => 
-  department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  department.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  department.status.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  // Filter departments
+  const filteredDepartments = departments.filter(
+    (department) =>
+      department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      department.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      department.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  // Sort the filtered cities
+  // Sort departments
   const sortedDepartments = [...filteredDepartments].sort((a, b) => {
     const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
+
     if (a[key].toLowerCase() < b[key].toLowerCase()) return -1 * dir;
     if (a[key].toLowerCase() > b[key].toLowerCase()) return 1 * dir;
     return 0;
@@ -35,7 +42,7 @@ function DepartmentTable({
 
   const totalPages = Math.ceil(sortedDepartments.length / itemsPerPage) || 1;
 
-  // Paginate sorted cities
+  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedDepartments = sortedDepartments.slice(
     startIndex,
@@ -43,24 +50,22 @@ function DepartmentTable({
   );
 
   const goToPage = (pageNum) => {
-    if (onPageChange && pageNum >= 1 && pageNum <= totalPages) {
+    if (pageNum >= 1 && pageNum <= totalPages) {
       onPageChange(pageNum);
     }
   };
 
   const handleSort = (column) => {
     if (sortConfig.key === column) {
-      // toggle direction
       setSortConfig({
         key: column,
         direction: sortConfig.direction === "asc" ? "desc" : "asc",
       });
     } else {
-      setSortConfig({ key: column, direction: "asc" }); // default to ascending
+      setSortConfig({ key: column, direction: "asc" });
     }
   };
 
-  // render sort arrow
   const getSortArrow = (column) => {
     if (sortConfig.key === column) {
       return sortConfig.direction === "asc" ? "▲" : "▼";
@@ -68,49 +73,81 @@ function DepartmentTable({
     return "";
   };
 
+  // ✅ Export Excel
+  const handleExportExcel = () => {
+    const exportData = sortedDepartments.map((item, index) => ({
+      "Sr. No.": index + 1,
+      Name: item.name,
+      Code: item.code,
+      Status: item.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const data = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(data, "Department_List.xlsx");
+  };
+
   return (
     <Box m="20px">
       <Header title="Department Management" subtitle="Admin/Department" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
+        {/* Search + Export + Items per page */}
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-          <div className="position-relative me-3 mb-2" style={{ flex: 1, minWidth: "200px" }}>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-              className="form-control"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => onSearch("")}
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  color: "#999",
-                }}
-              >
-                ×
-              </button>
-            )}
-          </div>
+      
+             <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
+          >
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => onSearch(e.target.value)}
+                className="form-control"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => onSearch("")}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "transparent",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    color: "#999",
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+         
+      
 
           <div className="d-flex align-items-center mb-2">
-            <label htmlFor="limitSelect" className="form-label me-2 mb-0 text-body">
+            <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
             <select
-              id="limitSelect"
               className="form-select"
-              style={{ width: "250px" }}
+              style={{ width: "200px" }}
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10));
@@ -123,52 +160,58 @@ function DepartmentTable({
                 </option>
               ))}
             </select>
+               <button
+              className="btn btn-success ms-3 mb-2"
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </button>
           </div>
         </div>
 
+        {/* Table */}
         <div className="table-responsive">
           <table className="table table-hover table-bordered align-middle text-center">
             <thead className="table-dark">
               <tr>
-                <th hidden>ID</th>
                 <th>Sr. No.</th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("name")}>
-                  Name <span style={{ float: "right" }}>{getSortArrow("name")}</span>
+                <th onClick={() => handleSort("name")} style={{ cursor: "pointer" }}>
+                  Name <span className="float-end">{getSortArrow("name")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("code")}>
-                  Code <span style={{ float: "right" }}>{getSortArrow("code")}</span>
+                <th onClick={() => handleSort("code")} style={{ cursor: "pointer" }}>
+                  Code <span className="float-end">{getSortArrow("code")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("status")}>
-                  Status <span style={{ float: "right" }}>{getSortArrow("status")}</span>
+                <th onClick={() => handleSort("status")} style={{ cursor: "pointer" }}>
+                  Status <span className="float-end">{getSortArrow("status")}</span>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {sortedDepartments.length === 0 ? (
+              {paginatedDepartments.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center text-muted">
+                  <td colSpan="5" className="text-muted">
                     No departments found.
                   </td>
                 </tr>
               ) : (
-                paginatedDepartments.map((departments, index) => (
-                  <tr key={departments.id}>
-                    
+                paginatedDepartments.map((item, index) => (
+                  <tr key={item.id}>
                     <td>{startIndex + index + 1}</td>
-                    <td>{departments.name}</td>
-                    <td>{departments.code}</td>
-                    <td>{departments.status}</td>
+                    <td>{item.name}</td>
+                    <td>{item.code}</td>
+                    <td>{item.status}</td>
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"
-                        onClick={() => editDepartment(departments)}
+                        onClick={() => editDepartment(item)}
                       >
                         Edit
                       </button>
                       <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => deleteDepartment(departments.id)}
+                        onClick={() => deleteDepartment(item.id)}
                       >
                         Delete
                       </button>
@@ -180,9 +223,11 @@ function DepartmentTable({
           </table>
         </div>
 
+        {/* Pagination */}
         <div className="d-flex justify-content-between align-items-center mt-3">
-          <span className="form-label me-2 mb-0 text-body">
-            Showing {paginatedDepartments.length} of {sortedDepartments.length} matching Departments
+          <span className="text-body">
+            Showing {paginatedDepartments.length} of{" "}
+            {sortedDepartments.length} matching departments
           </span>
           <div>
             <button
@@ -192,17 +237,21 @@ function DepartmentTable({
             >
               Prev
             </button>
+
             {[...Array(totalPages)].map((_, index) => (
               <button
                 key={index}
                 className={`btn btn-sm me-1 ${
-                  currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"
+                  currentPage === index + 1
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
                 }`}
                 onClick={() => goToPage(index + 1)}
               >
                 {index + 1}
               </button>
             ))}
+
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={() => goToPage(currentPage + 1)}

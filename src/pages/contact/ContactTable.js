@@ -7,6 +7,7 @@ function ContactTable({
   contacts,
   deleteContact,
   editContact,
+  handleExportExcel,
   currentPage,
   itemsPerPage,
   onPageChange,
@@ -81,16 +82,41 @@ function ContactTable({
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
 
-        {/* Search + Limit */}
-        <div className="d-flex justify-content-between mb-3 flex-wrap">
-          <input
-            type="text"
-            className="form-control mb-2"
-            style={{ maxWidth: "300px" }}
-            placeholder="Search contacts..."
-            value={searchTerm}
-            onChange={(e) => onSearch(e.target.value)}
-          />
+        {/* 🔍 Search + Export + Limit */}
+        <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
+
+          {/* Search */}
+            <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
+          >
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              className="form-control"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => onSearch("")}
+                className="btn btn-sm position-absolute"
+                style={{
+                  right: "6px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          <div className="d-flex align-items-center mb-2">
+              <label className="form-label me-2 mb-0 text-body">
+              Items per page:
+            </label>
 
           <select
             className="form-select mb-2"
@@ -107,7 +133,15 @@ function ContactTable({
               </option>
             ))}
           </select>
+             <button
+              className="btn btn-success mb-2 ms-3"
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </button>
+      
         </div>
+         </div>
 
         {/* Table */}
         <div className="table-responsive">
@@ -217,6 +251,7 @@ ContactTable.propTypes = {
   contacts: PropTypes.array.isRequired,
   deleteContact: PropTypes.func.isRequired,
   editContact: PropTypes.func.isRequired,
+  handleExportExcel: PropTypes.func.isRequired,
   currentPage: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,

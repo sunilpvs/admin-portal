@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function CityTable({
   cities,
@@ -14,30 +16,31 @@ function CityTable({
   onSearch,
   searchTerm,
 }) {
-  const [sortConfig, setSortConfig] = useState({ key: "city", direction: "asc" }); // default sort
+  const [sortConfig, setSortConfig] = useState({
+    key: "city",
+    direction: "asc",
+  });
 
-  // Filter cities based on search term
- const filteredCities = cities.filter((city) => 
-  city.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  city.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  city.country.toLowerCase().includes(searchTerm.toLowerCase())
+  /* -------------------- FILTER -------------------- */
+  const filteredCities = cities.filter(
+    (city) =>
+      city.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      city.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      city.country.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-);
-
-  // Sort the filtered cities
+  /* -------------------- SORT -------------------- */
   const sortedCities = [...filteredCities].sort((a, b) => {
     const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
+
     if (a[key].toLowerCase() < b[key].toLowerCase()) return -1 * dir;
     if (a[key].toLowerCase() > b[key].toLowerCase()) return 1 * dir;
     return 0;
   });
 
+  /* -------------------- PAGINATION -------------------- */
   const totalPages = Math.ceil(sortedCities.length / itemsPerPage) || 1;
-
-
-
-  // Paginate sorted cities
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCities = sortedCities.slice(
     startIndex,
@@ -45,24 +48,23 @@ function CityTable({
   );
 
   const goToPage = (pageNum) => {
-    if (onPageChange && pageNum >= 1 && pageNum <= totalPages) {
+    if (pageNum >= 1 && pageNum <= totalPages) {
       onPageChange(pageNum);
     }
   };
 
+  /* -------------------- SORT HANDLER -------------------- */
   const handleSort = (column) => {
     if (sortConfig.key === column) {
-      // toggle direction
       setSortConfig({
         key: column,
         direction: sortConfig.direction === "asc" ? "desc" : "asc",
       });
     } else {
-      setSortConfig({ key: column, direction: "asc" }); // default to ascending
+      setSortConfig({ key: column, direction: "asc" });
     }
   };
 
-  // render sort arrow
   const getSortArrow = (column) => {
     if (sortConfig.key === column) {
       return sortConfig.direction === "asc" ? "▲" : "▼";
@@ -70,14 +72,42 @@ function CityTable({
     return "";
   };
 
+  /* -------------------- EXPORT TO EXCEL -------------------- */
+  const handleExportExcel = () => {
+    const exportData = sortedCities.map((city, index) => ({
+      "Sr. No.": index + 1,
+      City: city.city,
+      State: city.state,
+      Country: city.country,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Cities");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const fileData = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(fileData, "City_List.xlsx");
+  };
+
   return (
     <Box m="20px">
-      <Header title="City Management" subtitle="Admin/City" />
+      <Header title="City Management" subtitle="Admin / City" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-        {/* Search and Items Per Page */}
+        {/* Search + Export + Limit */}
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-          <div className="position-relative me-3 mb-2" style={{ flex: 1, minWidth: "200px" }}>
+          <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
+          >
             <input
               type="text"
               placeholder="Search..."
@@ -107,13 +137,14 @@ function CityTable({
           </div>
 
           <div className="d-flex align-items-center mb-2">
-            <label htmlFor="limitSelect" className="form-label me-2 mb-0 text-body">
+            
+
+            <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
             <select
-              id="limitSelect"
               className="form-select"
-              style={{ width: "250px" }}
+              style={{ width: "120px" }}
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10));
@@ -126,31 +157,44 @@ function CityTable({
                 </option>
               ))}
             </select>
+            <button
+  className="btn btn-success ms-4"
+  onClick={handleExportExcel}
+>
+  Export Excel
+</button>
           </div>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="table-responsive">
           <table className="table table-hover table-bordered align-middle text-center">
             <thead className="table-dark">
               <tr>
                 <th>Sr. No.</th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("city")}>
-                  City <span style={{ float: "right" }}>{getSortArrow("city")}</span>
+                <th onClick={() => handleSort("city")} style={{ cursor: "pointer" }}>
+                  City <span className="float-end">{getSortArrow("city")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("state")}>
-                  State <span style={{ float: "right" }}>{getSortArrow("state")}</span>
+                <th onClick={() => handleSort("state")} style={{ cursor: "pointer" }}>
+                  State <span className="float-end">{getSortArrow("state")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("country")}>
-                  Country <span style={{ float: "right" }}>{getSortArrow("country")}</span>
+                <th
+                  onClick={() => handleSort("country")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Country{" "}
+                  <span className="float-end">
+                    {getSortArrow("country")}
+                  </span>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {paginatedCities.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center text-muted">
+                  <td colSpan="5" className="text-muted">
                     No cities found.
                   </td>
                 </tr>
@@ -182,11 +226,12 @@ function CityTable({
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* PAGINATION */}
         <div className="d-flex justify-content-between align-items-center mt-3">
-          <span className="form-label me-2 mb-0 text-body">
-            Showing {paginatedCities.length} of {sortedCities.length} matching cities
+          <span className="text-body">
+            Showing {paginatedCities.length} of {sortedCities.length} cities
           </span>
+
           <div>
             <button
               className="btn btn-outline-secondary btn-sm me-1"
@@ -195,17 +240,21 @@ function CityTable({
             >
               Prev
             </button>
+
             {[...Array(totalPages)].map((_, index) => (
               <button
                 key={index}
                 className={`btn btn-sm me-1 ${
-                  currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"
+                  currentPage === index + 1
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
                 }`}
                 onClick={() => goToPage(index + 1)}
               >
                 {index + 1}
               </button>
             ))}
+
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={() => goToPage(currentPage + 1)}

@@ -12,6 +12,7 @@ function UserTable({
   onLimitChange,
   onSearch,
   searchTerm,
+  handleExportExcel, // 👈 added
 }) {
   const [sortConfig, setSortConfig] = useState({
     key: "first_name",
@@ -74,61 +75,84 @@ function UserTable({
   return (
     <Box m="20px">
       <Header title="User Management" subtitle="Admin / Users" />
+ <div className="container mt-4 p-3 bg-white rounded shadow-sm">
 
-      <div className="container mt-4 p-3 bg-white rounded shadow-sm">
+        {/* 🔍 Search + Export + Limit */}
+        <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
 
-        {/* Search + Limit */}
-        <div className="d-flex justify-content-between mb-3 flex-wrap">
-          <input
-            type="text"
-            className="form-control mb-2"
-            style={{ maxWidth: "300px" }}
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => onSearch(e.target.value)}
-          />
-
-          <select
-            className="form-select mb-2"
-            style={{ width: "200px" }}
-            value={itemsPerPage}
-            onChange={(e) => {
-              onLimitChange(Number(e.target.value));
-              onPageChange(1);
-            }}
+          {/* Search */}
+            <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
           >
-            {[5, 10, 20, 50].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              className="form-control"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => onSearch("")}
+                className="btn btn-sm position-absolute"
+                style={{
+                  right: "6px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <div className="d-flex align-items-center mb-2">
+
+              <label className="form-label me-2 mb-0 text-body">
+              Items per page:
+            </label>
+
+            {/* Items per page */}
+            <select
+              className="form-select"
+              style={{ width: "200px" }}
+              value={itemsPerPage}
+              onChange={(e) => {
+                onLimitChange(Number(e.target.value));
+                onPageChange(1);
+              }}
+            >
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+             <button
+              className="btn btn-success me-3 ms-3"
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </button>
+          </div>
         </div>
 
-        {/* Table */}
+        {/* 📋 Table */}
         <div className="table-responsive">
           <table className="table table-bordered table-hover align-middle text-center">
             <thead className="table-dark">
               <tr>
                 <th>Sr</th>
-                <th
-                  onClick={() => handleSort("first_name")}
-                  style={{ cursor: "pointer" }}
-                >
+                <th onClick={() => handleSort("first_name")} style={{ cursor: "pointer" }}>
                   First Name {getSortArrow("first_name")}
                 </th>
-                <th
-                  onClick={() => handleSort("last_name")}
-                  style={{ cursor: "pointer" }}
-                >
+                <th onClick={() => handleSort("last_name")} style={{ cursor: "pointer" }}>
                   Last Name {getSortArrow("last_name")}
                 </th>
                 <th>Email</th>
                 <th>User Name</th>
-                <th
-                  onClick={() => handleSort("role_name")}
-                  style={{ cursor: "pointer" }}
-                >
+                <th onClick={() => handleSort("role_name")} style={{ cursor: "pointer" }}>
                   Role {getSortArrow("role_name")}
                 </th>
                 <th>Actions</th>
@@ -166,11 +190,12 @@ function UserTable({
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* 📄 Pagination */}
         <div className="d-flex justify-content-between mt-3">
           <span>
             Showing {paginatedUsers.length} of {sortedUsers.length}
           </span>
+
           <div>
             <button
               className="btn btn-sm btn-outline-secondary me-1"
@@ -217,6 +242,7 @@ UserTable.propTypes = {
   onLimitChange: PropTypes.func.isRequired,
   onSearch: PropTypes.func.isRequired,
   searchTerm: PropTypes.string.isRequired,
+  handleExportExcel: PropTypes.func.isRequired,
 };
 
 export default UserTable;
