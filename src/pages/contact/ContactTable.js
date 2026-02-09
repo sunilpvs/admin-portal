@@ -3,52 +3,64 @@ import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
 
-function StatusTable({
-  statuses,
-  deleteStatus,
-  editStatus,
+function ContactTable({
+  contacts,
+  deleteContact,
+  editContact,
+  handleExportExcel,
   currentPage,
   itemsPerPage,
   onPageChange,
   onLimitChange,
   onSearch,
   searchTerm,
-  handleExportExcel, // 👈 add this prop
 }) {
   const [sortConfig, setSortConfig] = useState({
-    key: "status",
+    key: "first_name",
     direction: "asc",
   });
 
-  /* 🔍 Filter */
-  const filteredStatuses = statuses.filter(
-    (item) =>
-      item.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.module.toLowerCase().includes(searchTerm.toLowerCase())
+  // 🔍 Search filter
+  const filteredContacts = contacts.filter((c) =>
+    [
+      c.first_name,
+      c.last_name,
+      c.email,
+      c.mobile,
+      c.city,
+      c.state_name,
+      c.country_name,
+      c.contact_type_name,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
-  /* ↕️ Sort */
-  const sortedStatuses = [...filteredStatuses].sort((a, b) => {
+  // 🔃 Sorting
+  const sortedContacts = [...filteredContacts].sort((a, b) => {
+    const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
-    return a[sortConfig.key].localeCompare(b[sortConfig.key]) * dir;
+    const valA = a[key]?.toString().toLowerCase() || "";
+    const valB = b[key]?.toString().toLowerCase() || "";
+    if (valA < valB) return -1 * dir;
+    if (valA > valB) return 1 * dir;
+    return 0;
   });
 
-  const totalPages = Math.ceil(filteredStatuses.length / itemsPerPage) || 1;
-
-  /* 📄 Pagination */
+  // 📄 Pagination
+  const totalPages = Math.ceil(sortedContacts.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedStatuses = sortedStatuses.slice(
+  const paginatedContacts = sortedContacts.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
-  const goToPage = (pageNum) => {
-    if (pageNum >= 1 && pageNum <= totalPages) {
-      onPageChange(pageNum);
-    }
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) onPageChange(page);
   };
 
+  // ↕ Sorting handler
   const handleSort = (column) => {
     setSortConfig((prev) => ({
       key: column,
@@ -66,7 +78,7 @@ function StatusTable({
 
   return (
     <Box m="20px">
-      <Header title="Status Management" subtitle="Admin / Status" />
+      <Header title="Contact Management" subtitle="Admin / Contacts" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
 
@@ -101,82 +113,87 @@ function StatusTable({
             )}
           </div>
 
-          {/* Export + Limit */}
           <div className="d-flex align-items-center mb-2">
-
-            {/* ✅ Export Excel (LEFT MARGIN ADDED) */}
-           
-
-            <label className="form-label me-2 mb-0 text-body">
+              <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
-            <select
-              className="form-select"
-              style={{ width: "120px" }}
-              value={itemsPerPage}
-              onChange={(e) => {
-                onLimitChange(Number(e.target.value));
-                onPageChange(1);
-              }}
-            >
-              {[5, 10, 20, 50].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
+
+          <select
+            className="form-select mb-2"
+            style={{ width: "200px" }}
+            value={itemsPerPage}
+            onChange={(e) => {
+              onLimitChange(Number(e.target.value));
+              onPageChange(1);
+            }}
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
              <button
-              className="btn btn-success me-3 ms-3"
+              className="btn btn-success mb-2 ms-3"
               onClick={handleExportExcel}
             >
               Export Excel
             </button>
-          </div>
+      
         </div>
+         </div>
 
-        {/* 📋 Table */}
+        {/* Table */}
         <div className="table-responsive">
-          <table className="table table-hover table-bordered align-middle text-center">
+          <table className="table table-bordered table-hover align-middle text-center">
             <thead className="table-dark">
               <tr>
-                <th>Sr. No.</th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("code")}>
-                  Code <span className="float-end">{getSortArrow("code")}</span>
+                <th>Sr</th>
+                <th onClick={() => handleSort("first_name")} style={{ cursor: "pointer" }}>
+                  First Name {getSortArrow("first_name")}
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("status")}>
-                  Status <span className="float-end">{getSortArrow("status")}</span>
+                <th onClick={() => handleSort("last_name")} style={{ cursor: "pointer" }}>
+                  Last Name {getSortArrow("last_name")}
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("module")}>
-                  Module <span className="float-end">{getSortArrow("module")}</span>
-                </th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Country</th>
+                <th>Contact Type</th>
                 <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {paginatedStatuses.length === 0 ? (
+              {paginatedContacts.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-muted">
-                    No statuses found.
+                  <td colSpan="10" className="text-muted">
+                    No contacts found
                   </td>
                 </tr>
               ) : (
-                paginatedStatuses.map((data, index) => (
-                  <tr key={data.id}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{data.code}</td>
-                    <td>{data.status}</td>
-                    <td>{data.module}</td>
+                paginatedContacts.map((c, i) => (
+                  <tr key={c.id}>
+                    <td>{startIndex + i + 1}</td>
+                    <td>{c.first_name}</td>
+                    <td>{c.last_name}</td>
+                    <td>{c.email}</td>
+                    <td>{c.mobile}</td>
+                    <td>{c.city}</td>
+                    <td>{c.state_name}</td>
+                    <td>{c.country_name}</td>
+                    <td>{c.contact_type_name}</td>
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"
-                        onClick={() => editStatus(data)}
+                        onClick={() => editContact(c)}
                       >
                         Edit
                       </button>
                       <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => deleteStatus(data.id)}
+                        onClick={() => deleteContact(c.id)}
                       >
                         Delete
                       </button>
@@ -188,12 +205,11 @@ function StatusTable({
           </table>
         </div>
 
-        {/* 📄 Pagination */}
-        <div className="d-flex justify-content-between align-items-center mt-3">
+        {/* Pagination */}
+        <div className="d-flex justify-content-between mt-3">
           <span>
-            Showing {paginatedStatuses.length} of {sortedStatuses.length} matching statuses
+            Showing {paginatedContacts.length} of {sortedContacts.length}
           </span>
-
           <div>
             <button
               className="btn btn-sm btn-outline-secondary me-1"
@@ -203,17 +219,17 @@ function StatusTable({
               Prev
             </button>
 
-            {[...Array(totalPages)].map((_, index) => (
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                key={index}
+                key={i}
                 className={`btn btn-sm me-1 ${
-                  currentPage === index + 1
+                  currentPage === i + 1
                     ? "btn-primary"
                     : "btn-outline-secondary"
                 }`}
-                onClick={() => goToPage(index + 1)}
+                onClick={() => goToPage(i + 1)}
               >
-                {index + 1}
+                {i + 1}
               </button>
             ))}
 
@@ -231,10 +247,10 @@ function StatusTable({
   );
 }
 
-StatusTable.propTypes = {
-  statuses: PropTypes.array.isRequired,
-  deleteStatus: PropTypes.func.isRequired,
-  editStatus: PropTypes.func.isRequired,
+ContactTable.propTypes = {
+  contacts: PropTypes.array.isRequired,
+  deleteContact: PropTypes.func.isRequired,
+  editContact: PropTypes.func.isRequired,
   handleExportExcel: PropTypes.func.isRequired,
   currentPage: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
@@ -244,4 +260,4 @@ StatusTable.propTypes = {
   searchTerm: PropTypes.string.isRequired,
 };
 
-export default StatusTable;
+export default ContactTable;

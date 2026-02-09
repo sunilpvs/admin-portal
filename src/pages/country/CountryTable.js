@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function CountryTable({
   countries,
@@ -14,19 +16,24 @@ function CountryTable({
   onSearch,
   searchTerm,
 }) {
-  const [sortConfig, setSortConfig] = useState({ key: "country", direction: "asc" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "country",
+    direction: "asc",
+  });
 
-  // Filter countries based on search term
-  const filteredCountries = countries.filter((country) =>
-    country.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.currency.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter countries
+  const filteredCountries = countries.filter(
+    (country) =>
+      country.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      country.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      country.currency.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort filtered countries
+  // Sort countries
   const sortedCountries = [...filteredCountries].sort((a, b) => {
     const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
+
     if (a[key].toLowerCase() < b[key].toLowerCase()) return -1 * dir;
     if (a[key].toLowerCase() > b[key].toLowerCase()) return 1 * dir;
     return 0;
@@ -34,7 +41,7 @@ function CountryTable({
 
   const totalPages = Math.ceil(sortedCountries.length / itemsPerPage) || 1;
 
-  // Paginate sorted countries
+  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCountries = sortedCountries.slice(
     startIndex,
@@ -42,7 +49,7 @@ function CountryTable({
   );
 
   const goToPage = (pageNum) => {
-    if (onPageChange && pageNum >= 1 && pageNum <= totalPages) {
+    if (pageNum >= 1 && pageNum <= totalPages) {
       onPageChange(pageNum);
     }
   };
@@ -65,50 +72,79 @@ function CountryTable({
     return "";
   };
 
+  // ✅ Export Excel
+  const handleExportExcel = () => {
+    const exportData = sortedCountries.map((item, index) => ({
+      "Sr. No.": index + 1,
+      Country: item.country,
+      Code: item.code,
+      Currency: item.currency,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Countries");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const data = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(data, "Country_List.xlsx");
+  };
+
   return (
     <Box m="20px">
       <Header title="Country Management" subtitle="Admin/Country" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-        {/* Search and Items Per Page */}
+        {/* Search + Export + Items Per Page */}
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-          <div className="position-relative me-3 mb-2" style={{ flex: 1, minWidth: "200px" }}>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-              className="form-control"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => onSearch("")}
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  border: "none",
-                  background: "transparent",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  color: "#b10000ff",
-                }}
-              >
-                ×
-              </button>
-            )}
-          </div>
+         
+             <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
+          >
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => onSearch(e.target.value)}
+                className="form-control"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => onSearch("")}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "transparent",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    color: "#b10000ff",
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
 
           <div className="d-flex align-items-center mb-2">
-            <label htmlFor="limitSelect" className="form-label me-2 mb-0 text-body">
+            <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
             <select
-              id="limitSelect"
               className="form-select"
-              style={{ width: "250px" }}
+              style={{ width: "200px" }}
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10));
@@ -121,6 +157,12 @@ function CountryTable({
                 </option>
               ))}
             </select>
+              <button
+              className="btn btn-success ms-3 mb-2"
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </button>
           </div>
         </div>
 
@@ -129,45 +171,44 @@ function CountryTable({
           <table className="table table-hover table-bordered align-middle text-center">
             <thead className="table-dark">
               <tr>
-                <th hidden>ID</th>
                 <th>Sr. No.</th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("country")}>
-                  Country <span style={{ float: "right" }}>{getSortArrow("country")}</span>
+                <th onClick={() => handleSort("country")} style={{ cursor: "pointer" }}>
+                  Country <span className="float-end">{getSortArrow("country")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("code")}>
-                  Code <span style={{ float: "right" }}>{getSortArrow("code")}</span>
+                <th onClick={() => handleSort("code")} style={{ cursor: "pointer" }}>
+                  Code <span className="float-end">{getSortArrow("code")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("currency")}>
-                  Currency <span style={{ float: "right" }}>{getSortArrow("currency")}</span>
+                <th onClick={() => handleSort("currency")} style={{ cursor: "pointer" }}>
+                  Currency <span className="float-end">{getSortArrow("currency")}</span>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {paginatedCountries.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center text-muted">
+                  <td colSpan="5" className="text-muted">
                     No countries found.
                   </td>
                 </tr>
               ) : (
-                paginatedCountries.map((data, index) => (
-                  <tr key={data.id}>
-                    <td hidden>{data.id}</td>
+                paginatedCountries.map((item, index) => (
+                  <tr key={item.id}>
                     <td>{startIndex + index + 1}</td>
-                    <td>{data.country}</td>
-                    <td>{data.code}</td>
-                    <td>{data.currency}</td>
+                    <td>{item.country}</td>
+                    <td>{item.code}</td>
+                    <td>{item.currency}</td>
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"
-                        onClick={() => editCountry(data)}
+                        onClick={() => editCountry(item)}
                       >
                         Edit
                       </button>
                       <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => deleteCountry(data.id)}
+                        onClick={() => deleteCountry(item.id)}
                       >
                         Delete
                       </button>
@@ -181,8 +222,8 @@ function CountryTable({
 
         {/* Pagination */}
         <div className="d-flex justify-content-between align-items-center mt-3">
-          <span className="form-label me-2 mb-0 text-body">
-            Showing {paginatedCountries.length} of {sortedCountries.length} matching countries
+          <span className="text-body">
+            Showing {paginatedCountries.length} of {sortedCountries.length} countries
           </span>
           <div>
             <button
@@ -192,17 +233,21 @@ function CountryTable({
             >
               Prev
             </button>
-            {[...Array(totalPages)].map((_, index) => (
+
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                key={index}
+                key={i}
                 className={`btn btn-sm me-1 ${
-                  currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"
+                  currentPage === i + 1
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
                 }`}
-                onClick={() => goToPage(index + 1)}
+                onClick={() => goToPage(i + 1)}
               >
-                {index + 1}
+                {i + 1}
               </button>
             ))}
+
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={() => goToPage(currentPage + 1)}

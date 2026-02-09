@@ -3,68 +3,85 @@ import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
 
-function CostCenterTypeTable({
-  CostCenterTypes,
-  deleteCcType,
-  editCcType,
+function UserTable({
+  users,
+  deleteUser,
   currentPage,
-  total,
   itemsPerPage,
   onPageChange,
   onLimitChange,
   onSearch,
   searchTerm,
-  handleExportExcel, // 👈 add this prop
+  handleExportExcel, // 👈 added
 }) {
   const [sortConfig, setSortConfig] = useState({
-    key: "cc_type",
+    key: "first_name",
     direction: "asc",
   });
 
-  /* 🔍 Filter */
-  const filteredCostCenterTypes = CostCenterTypes.filter((item) =>
-    item?.cc_type?.toLowerCase().includes(searchTerm.toLowerCase())
+  // 🔍 Search
+  const filteredUsers = users.filter((u) =>
+    [
+      u.first_name,
+      u.last_name,
+      u.email,
+      u.username,
+      u.role_name,
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
-  /* ↕️ Sort */
-  const sortedCostCenterTypes = [...filteredCostCenterTypes].sort((a, b) => {
+  // 🔃 Sorting
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
-    return a.cc_type.localeCompare(b.cc_type) * dir;
+    const valA = a[key]?.toString().toLowerCase() || "";
+    const valB = b[key]?.toString().toLowerCase() || "";
+    if (valA < valB) return -1 * dir;
+    if (valA > valB) return 1 * dir;
+    return 0;
   });
 
-  const totalPages = Math.ceil(sortedCostCenterTypes.length / itemsPerPage) || 1;
-
-  /* 📄 Pagination */
+  // 📄 Pagination
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCostCenterTypes = sortedCostCenterTypes.slice(
+  const paginatedUsers = sortedUsers.slice(
     startIndex,
     startIndex + itemsPerPage
   );
 
-  const handleSort = () => {
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) onPageChange(page);
+  };
+
+  // ↕ Sorting handler
+  const handleSort = (column) => {
     setSortConfig((prev) => ({
-      key: "cc_type",
-      direction: prev.direction === "asc" ? "desc" : "asc",
+      key: column,
+      direction:
+        prev.key === column && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
-  const getSortArrow = () =>
-    sortConfig.direction === "asc" ? "▲" : "▼";
+  const getSortArrow = (column) =>
+    sortConfig.key === column
+      ? sortConfig.direction === "asc"
+        ? "▲"
+        : "▼"
+      : "";
 
   return (
     <Box m="20px">
-      <Header
-        title="Cost Center Type Management"
-        subtitle="Admin / CostCenterType"
-      />
-
-      <div className="container mt-4 p-3 bg-white rounded shadow-sm">
+      <Header title="User Management" subtitle="Admin / Users" />
+ <div className="container mt-4 p-3 bg-white rounded shadow-sm">
 
         {/* 🔍 Search + Export + Limit */}
-        <div className="d-flex justify-content-between align-items-center flex-wrap mb-3">
+        <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
 
           {/* Search */}
-           <div
+            <div
             className="position-relative me-3 mb-2"
             style={{ flex: 1, minWidth: "200px" }}
           >
@@ -90,30 +107,29 @@ function CostCenterTypeTable({
               </button>
             )}
           </div>
-
-          {/* Export + Limit */}
           <div className="d-flex align-items-center mb-2">
 
-            {/* ✅ Export Excel with LEFT MARGIN */}
-          
+              <label className="form-label me-2 mb-0 text-body">
+              Items per page:
+            </label>
 
-            <label className="form-label me-2 mb-0 text-body">Items per page:</label>
+            {/* Items per page */}
             <select
               className="form-select"
-              style={{ width: "120px" }}
+              style={{ width: "200px" }}
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(Number(e.target.value));
                 onPageChange(1);
               }}
             >
-              {[5, 10, 20, 50].map((num) => (
-                <option key={num} value={num}>
-                  {num}
+              {[5, 10, 20, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
                 </option>
               ))}
             </select>
-              <button
+             <button
               className="btn btn-success me-3 ms-3"
               onClick={handleExportExcel}
             >
@@ -124,40 +140,45 @@ function CostCenterTypeTable({
 
         {/* 📋 Table */}
         <div className="table-responsive">
-          <table className="table table-hover table-bordered text-center">
+          <table className="table table-bordered table-hover align-middle text-center">
             <thead className="table-dark">
               <tr>
-                <th>Sr. No</th>
-                <th style={{ cursor: "pointer" }} onClick={handleSort}>
-                  Cost Center Type
-                  <span className="float-end">{getSortArrow()}</span>
+                <th>Sr</th>
+                <th onClick={() => handleSort("first_name")} style={{ cursor: "pointer" }}>
+                  First Name {getSortArrow("first_name")}
+                </th>
+                <th onClick={() => handleSort("last_name")} style={{ cursor: "pointer" }}>
+                  Last Name {getSortArrow("last_name")}
+                </th>
+                <th>Email</th>
+                <th>User Name</th>
+                <th onClick={() => handleSort("role_name")} style={{ cursor: "pointer" }}>
+                  Role {getSortArrow("role_name")}
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {paginatedCostCenterTypes.length === 0 ? (
+              {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="text-muted">
-                    No records found
+                  <td colSpan="7" className="text-muted">
+                    No users found
                   </td>
                 </tr>
               ) : (
-                paginatedCostCenterTypes.map((item, index) => (
-                  <tr key={item.id}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{item.cc_type}</td>
+                paginatedUsers.map((u, i) => (
+                  <tr key={u.id}>
+                    <td>{startIndex + i + 1}</td>
+                    <td>{u.first_name}</td>
+                    <td>{u.last_name}</td>
+                    <td>{u.email}</td>
+                    <td>{u.username}</td>
+                    <td>{u.role_name}</td>
                     <td>
                       <button
-                        className="btn btn-sm btn-outline-primary me-2"
-                        onClick={() => editCcType(item)}
-                      >
-                        Edit
-                      </button>
-                      <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => deleteCcType(item.id)}
+                        onClick={() => deleteUser(u.id)}
                       >
                         Delete
                       </button>
@@ -169,17 +190,17 @@ function CostCenterTypeTable({
           </table>
         </div>
 
-        {/* 📄 Footer */}
-        <div className="d-flex justify-content-between align-items-center mt-3">
+        {/* 📄 Pagination */}
+        <div className="d-flex justify-content-between mt-3">
           <span>
-            Showing {paginatedCostCenterTypes.length} of {total}
+            Showing {paginatedUsers.length} of {sortedUsers.length}
           </span>
 
           <div>
             <button
               className="btn btn-sm btn-outline-secondary me-1"
               disabled={currentPage === 1}
-              onClick={() => onPageChange(currentPage - 1)}
+              onClick={() => goToPage(currentPage - 1)}
             >
               Prev
             </button>
@@ -192,7 +213,7 @@ function CostCenterTypeTable({
                     ? "btn-primary"
                     : "btn-outline-secondary"
                 }`}
-                onClick={() => onPageChange(i + 1)}
+                onClick={() => goToPage(i + 1)}
               >
                 {i + 1}
               </button>
@@ -201,7 +222,7 @@ function CostCenterTypeTable({
             <button
               className="btn btn-sm btn-outline-secondary"
               disabled={currentPage === totalPages}
-              onClick={() => onPageChange(currentPage + 1)}
+              onClick={() => goToPage(currentPage + 1)}
             >
               Next
             </button>
@@ -212,18 +233,16 @@ function CostCenterTypeTable({
   );
 }
 
-CostCenterTypeTable.propTypes = {
-  CostCenterTypes: PropTypes.array.isRequired,
-  deleteCcType: PropTypes.func.isRequired,
-  editCcType: PropTypes.func.isRequired,
-  handleExportExcel: PropTypes.func.isRequired,
+UserTable.propTypes = {
+  users: PropTypes.array.isRequired,
+  deleteUser: PropTypes.func.isRequired,
   currentPage: PropTypes.number.isRequired,
-  total: PropTypes.number,
   itemsPerPage: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,
   onLimitChange: PropTypes.func.isRequired,
   onSearch: PropTypes.func.isRequired,
   searchTerm: PropTypes.string.isRequired,
+  handleExportExcel: PropTypes.func.isRequired,
 };
 
-export default CostCenterTypeTable;
+export default UserTable;

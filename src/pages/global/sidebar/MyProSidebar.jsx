@@ -277,6 +277,24 @@ const MyProSidebar = () => {
                                 selected={selected}
                                 setSelected={setSelected}
                             />
+
+                            <Item
+                                title="Manage User"
+                                to="/user"
+                                icon={<BarChartOutlinedIcon />}
+                                selected={selected}
+                                setSelected={setSelected}
+                            />
+ 
+                            <Item
+                                title="Manage Contact"
+                                to="/contact"
+                                icon={<BarChartOutlinedIcon />}
+                                selected={selected}
+                                setSelected={setSelected}
+                            />
+
+
                             <Item 
                                 title="Access Request" 
                                 to="/access-requests"

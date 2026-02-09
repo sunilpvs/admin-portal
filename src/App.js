@@ -29,6 +29,8 @@ import ActivityLog from "./pages/activity/ActivityLog";
 import Entity from "./pages/entity/Entity";
 import CostCenter from "./pages/costcenter/CostCenter";
 
+import User from "./pages/user/User";
+import Contact from "./pages/contact/Contact";
 
 
 import AccessRequests from "./pages/accessRequest/AccessRequests";
@@ -89,6 +91,8 @@ const AppRoutes = () => (
             <Route path="profile" element={<UserProfile />} />
             <Route path="activity" element={<ActivityLog />} />
             <Route path="entity" element={<Entity />} />
+            <Route path="user" element={<User />} />
+            <Route path="contact" element={<Contact />} />
          
             <Route path="access-requests" element={<AccessRequests />} />
             <Route path="users-list" element={<AccessUser />} />

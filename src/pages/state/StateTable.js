@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { Box } from "@mui/material";
 import Header from "../../components/Header";
 import { useState } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 function StateTable({
   states,
@@ -14,35 +16,43 @@ function StateTable({
   onSearch,
   searchTerm,
 }) {
-  const [sortConfig, setSortConfig] = useState({ key: "state", direction: "asc" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "state",
+    direction: "asc",
+  });
 
-  // Filter states by search term
-  const filteredStates = states.filter((s) =>
-    s.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.country.toLowerCase().includes(searchTerm.toLowerCase())
+  /* -------------------- FILTER -------------------- */
+  const filteredStates = states.filter(
+    (s) =>
+      s.state.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort filtered states
+  /* -------------------- SORT -------------------- */
   const sortedStates = [...filteredStates].sort((a, b) => {
     const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
+
     if (a[key].toLowerCase() < b[key].toLowerCase()) return -1 * dir;
     if (a[key].toLowerCase() > b[key].toLowerCase()) return 1 * dir;
     return 0;
   });
 
+  /* -------------------- PAGINATION -------------------- */
   const totalPages = Math.ceil(sortedStates.length / itemsPerPage) || 1;
-
-  // Slice for pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedStates = sortedStates.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedStates = sortedStates.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const goToPage = (pageNum) => {
-    if (onPageChange && pageNum >= 1 && pageNum <= totalPages) {
+    if (pageNum >= 1 && pageNum <= totalPages) {
       onPageChange(pageNum);
     }
   };
 
+  /* -------------------- SORT HANDLER -------------------- */
   const handleSort = (column) => {
     if (sortConfig.key === column) {
       setSortConfig({
@@ -61,14 +71,41 @@ function StateTable({
     return "";
   };
 
+  /* -------------------- EXPORT TO EXCEL -------------------- */
+  const handleExportExcel = () => {
+    const exportData = sortedStates.map((state, index) => ({
+      "Sr. No.": index + 1,
+      State: state.state,
+      Country: state.country,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "States");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const fileData = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+
+    saveAs(fileData, "State_List.xlsx");
+  };
+
   return (
     <Box m="20px">
-      <Header title="State Management" subtitle="Admin/State" />
+      <Header title="State Management" subtitle="Admin / State" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-        {/* Search and Items per page */}
+        {/* Search + Export + Limit */}
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-          <div className="position-relative me-3 mb-2" style={{ flex: 1, minWidth: "200px" }}>
+          <div
+            className="position-relative me-3 mb-2"
+            style={{ flex: 1, minWidth: "200px" }}
+          >
             <input
               type="text"
               placeholder="Search..."
@@ -98,17 +135,16 @@ function StateTable({
           </div>
 
           <div className="d-flex align-items-center mb-2">
-            <label htmlFor="limitSelect" className="form-label me-2 mb-0 text-body">
+            <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
             <select
-              id="limitSelect"
               className="form-select"
-              style={{ width: "250px" }}
+              style={{ width: "120px" }}
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10));
-                onPageChange(1); // reset to first page
+                onPageChange(1);
               }}
             >
               {[5, 10, 20, 50].map((num) => (
@@ -117,28 +153,43 @@ function StateTable({
                 </option>
               ))}
             </select>
+
+            <button
+              className="btn btn-success ms-4"
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </button>
           </div>
         </div>
 
-        {/* Table */}
+        {/* TABLE */}
         <div className="table-responsive">
           <table className="table table-hover table-bordered align-middle text-center">
             <thead className="table-dark">
               <tr>
                 <th>S.No</th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("state")}>
-                  State <span style={{ float: "right" }}>{getSortArrow("state")}</span>
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("state")}
+                >
+                  State <span className="float-end">{getSortArrow("state")}</span>
                 </th>
-                <th style={{ cursor: "pointer" }} onClick={() => handleSort("country")}>
-                  Country <span style={{ float: "right" }}>{getSortArrow("country")}</span>
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("country")}
+                >
+                  Country{" "}
+                  <span className="float-end">{getSortArrow("country")}</span>
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {paginatedStates.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center text-muted">
+                  <td colSpan="4" className="text-muted">
                     No states found.
                   </td>
                 </tr>
@@ -169,11 +220,12 @@ function StateTable({
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* PAGINATION */}
         <div className="d-flex justify-content-between align-items-center mt-3">
-          <span className="form-label me-2 mb-0 text-body">
-            Showing {paginatedStates.length} of {sortedStates.length} matching states
+          <span className="text-body">
+            Showing {paginatedStates.length} of {sortedStates.length} states
           </span>
+
           <div>
             <button
               className="btn btn-outline-secondary btn-sm me-1"
@@ -182,17 +234,21 @@ function StateTable({
             >
               Prev
             </button>
+
             {[...Array(totalPages)].map((_, index) => (
               <button
                 key={index}
                 className={`btn btn-sm me-1 ${
-                  currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"
+                  currentPage === index + 1
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
                 }`}
                 onClick={() => goToPage(index + 1)}
               >
                 {index + 1}
               </button>
             ))}
+
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={() => goToPage(currentPage + 1)}
