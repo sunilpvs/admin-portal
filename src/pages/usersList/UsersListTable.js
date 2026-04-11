@@ -15,12 +15,6 @@ function UsersListTable({
   onDelete,
   handleExportExcel, // 👈 add this prop
 }) {
-  const filteredUsers = users.filter((user) =>
-    `${user.username} ${user.user_email} ${user.user_role}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
   const goToPage = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
       setPage(pageNum);
@@ -112,14 +106,14 @@ function UsersListTable({
             </thead>
 
             <tbody>
-              {filteredUsers.length === 0 ? (
+              {users.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-muted text-center">
                     No users found.
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user, index) => (
+                users.map((user, index) => (
                   <tr key={index}>
                     <td>{user.username}</td>
                     <td>{user.user_email}</td>
@@ -154,7 +148,7 @@ function UsersListTable({
         {/* 📄 Pagination */}
         <div className="d-flex justify-content-between align-items-center mt-3">
           <span className="form-label me-2 mb-0 text-body">
-            Showing {filteredUsers.length} users on this page
+            Showing {users.length} users on this page
           </span>
 
           <div>

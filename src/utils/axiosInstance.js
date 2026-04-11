@@ -14,13 +14,6 @@ const refreshAxios = axios.create({
 });
 
 
-
-
-
-<<<<<<< .merge_file_1Rk9Jg
-
-=======
->>>>>>> .merge_file_OOzrj4
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {

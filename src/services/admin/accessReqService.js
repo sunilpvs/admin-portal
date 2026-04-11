@@ -25,9 +25,22 @@ export const getPendingAccessRequests = () => {
 }
 
 
-export const getAdminAccessStatus = () => {
-    return axiosInstance.get(`auth/access-status.php?type=admin`);
-}
+export const getAdminAccessStatus = async () => {
+    try {
+        const res = await axiosInstance.get("auth/access-status.php?type=admin");
+
+        return { status: "granted" };
+
+    } catch (err) {
+        if (err.response?.status === 403) {
+            return {
+                status: err?.response?.data?.req_status?.toLowerCase() // already normalized
+            };
+        }
+
+        throw err;
+    }
+};
 
 export const deleteUser = (payload) => {
     return axiosInstance.delete(`api/admin/access-request`, payload);

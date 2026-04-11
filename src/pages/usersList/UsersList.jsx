@@ -15,10 +15,46 @@ const UsersList = () => {
 
   const fetchUsers = async () => {
     try {
+      const trimmedSearch = searchTerm.trim().toLowerCase();
+
+      if (trimmedSearch) {
+        const firstPageRes = await getPaginatedUsers(1, limit);
+        const firstPageUsers = firstPageRes?.data?.users || [];
+        const totalUsers = firstPageRes?.data?.total || firstPageUsers.length;
+
+        let allUsers = firstPageUsers;
+        if (totalUsers > firstPageUsers.length) {
+          const allUsersRes = await getPaginatedUsers(1, totalUsers);
+          allUsers = allUsersRes?.data?.users || [];
+        }
+
+        const globallyFilteredUsers = allUsers.filter((user) =>
+          `${user.username || ""} ${user.user_email || ""} ${user.user_role || ""} ${user.access_level || ""}`
+            .toLowerCase()
+            .includes(trimmedSearch)
+        );
+
+        const computedTotalPages = Math.max(
+          1,
+          Math.ceil(globallyFilteredUsers.length / limit)
+        );
+        const safePage = Math.min(page, computedTotalPages);
+        const start = (safePage - 1) * limit;
+        const end = start + limit;
+
+        if (safePage !== page) {
+          setPage(safePage);
+        }
+
+        setUsers(globallyFilteredUsers.slice(start, end));
+        setTotalPages(computedTotalPages);
+        return;
+      }
+
       const res = await getPaginatedUsers(page, limit);
       if (res.data.users) {
         setUsers(res.data.users);
-        setTotalPages(Math.ceil(res.data.total / res.data.limit));
+        setTotalPages(Math.max(1, Math.ceil(res.data.total / res.data.limit)));
       }
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -28,7 +64,7 @@ const UsersList = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [page, limit]);
+  }, [page, limit, searchTerm]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -44,6 +80,11 @@ const UsersList = () => {
   useEffect(() => {
     fetchCurrentUser();
   },[]);
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
 
 
   const handleDeleteUser = async (email, module_id) => {
@@ -86,7 +127,7 @@ const UsersList = () => {
             <UsersListTable
                 users={users}
                 currentUserEmail={currentUserEmail}
-                onSearch={setSearchTerm}
+              onSearch={handleSearch}
                 searchTerm={searchTerm}
                 page={page}
                 setPage={setPage}
