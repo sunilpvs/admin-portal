@@ -59,6 +59,8 @@ export const getAdminAccessStatus = async () => {
     }
 };
 
+
+
 export const deleteUser = (payload) => {
     return axiosInstance.delete(`api/admin/access-request`, payload);
 }
