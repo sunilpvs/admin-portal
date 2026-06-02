@@ -77,6 +77,7 @@ const AppRoutes = () => (
                 </ProtectedRoute>
             }
         >
+            
             <Route index element={<Dashboard />} />
             <Route path="city" element={<City />} />
             <Route path="state" element={<State />} />
