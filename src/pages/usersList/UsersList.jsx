@@ -53,6 +53,7 @@ const UsersList = () => {
 
       const res = await getPaginatedUsers(page, limit);
       if (res.data.users) {
+        console.log("Fetched users total:", res.data.users.length, "Total in DB:");
         setUsers(res.data.users);
         setTotalPages(Math.max(1, Math.ceil(res.data.total / res.data.limit)));
       }
