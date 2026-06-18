@@ -30,6 +30,17 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import {QuestionMark} from "@mui/icons-material";
 
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+
 const Item = ({ title, to, icon, selected, setSelected }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
@@ -196,120 +207,222 @@ const MyProSidebar = () => {
                     )}
 
                     <Box paddingLeft={collapsed ? undefined : "10%"}>
-                        <Item
-                            title="Admin Dashboard"
-                            to="/"
-                            icon={<HomeOutlinedIcon />}
-                            selected={selected}
-                            setSelected={setSelected}
-                        />
-
-                      
-                            <Item
-                                title="City"
-                                to="/city"
-                                icon={<LocationCityIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="State"
-                                to="/state"
-                                icon={<MapIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Country"
-                                to="/country"
-                                icon={<PublicIcon/>}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Department"
-                                to="/department"
-                                icon={<BusinessIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Designation"
-                                to="/designation"
-                                icon={<WorkOutlineIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-
-                             <Item
-                                title="Entity"
-                                to="/entity"
-                                icon={<BarChartOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-
-                            <Item
-                                title="Costcenter"
-                                to="/costcenter"
-                                icon={<BarChartOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Costcenter Type"
-                                to="/costcentertype"
-                                icon={<RequestQuoteOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Contact Type"
-                                to="/contacttype"
-                                icon={<ContactPhoneOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-                            <Item
-                                title="Status"
-                                to="/status"
-                                icon={<InfoOutlinedIcon/>}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
-
-                            <Item
-                                title="Manage User"
-                                to="/user"
-                                icon={<BarChartOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
- 
-                            <Item
-                                title="Manage Contact"
-                                to="/contact"
-                                icon={<BarChartOutlinedIcon />}
-                                selected={selected}
-                                setSelected={setSelected}
-                            />
+                
 
 
-                            <Item 
-                                title="Access Request" 
-                                to="/access-requests"
-                                icon={<VpnKeyOutlinedIcon />} 
-                                selected={selected} 
-                                setSelected={setSelected} 
-                            />
+<Item
+    title="Admin Dashboard"
+    to="/"
+    icon={<HomeOutlinedIcon />}
+    selected={selected}
+    setSelected={setSelected}
+/>
 
-                            <Item 
-                                title="Users List" 
-                                to="/users-list" 
-                                icon={<GroupOutlinedIcon />} 
-                                selected={selected} 
-                                setSelected={setSelected} 
-                            />
+
+
+<SubMenu
+    label="Leave Management"
+    icon={<EventNoteOutlinedIcon />}
+>
+    <Item
+        title="Leave Calendar"
+        to="/leave-calendar"
+        icon={<CalendarMonthOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Employee Leaves"
+        to="/employee-leaves"
+        icon={<EventAvailableOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Leave Definition"
+        to="/leave-definition"
+        icon={<AssignmentOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Attendance"
+        to="/attendance"
+        icon={<AccessTimeOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+
+<SubMenu
+    label="HR Admin"
+    icon={<ManageAccountsOutlinedIcon />}
+>
+  <Item
+    title="Employee"
+    to="/employee"
+    icon={<PersonOutlineOutlinedIcon />}
+    selected={selected}
+    setSelected={setSelected}
+/>
+
+    <Item
+        title="Financial Definition"
+        to="/financial-definition"
+        icon={<AccountBalanceWalletOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Payroll"
+        to="/payroll"
+        icon={<PaymentsOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+{/* Master Data */}
+<SubMenu
+    label="Master Data"
+    icon={<MapIcon />}
+>
+    <Item
+        title="City"
+        to="/city"
+        icon={<LocationCityIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="State"
+        to="/state"
+        icon={<MapIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Country"
+        to="/country"
+        icon={<PublicIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Department"
+        to="/department"
+        icon={<BusinessIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Designation"
+        to="/designation"
+        icon={<WorkOutlineIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+{/* Entity Management */}
+<SubMenu
+    label="Entity Management"
+    icon={<BusinessIcon />}
+>
+    <Item
+        title="Entity"
+        to="/entity"
+        icon={<BarChartOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Cost Center"
+        to="/costcenter"
+        icon={<BarChartOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+{/* System Config */}
+<SubMenu
+    label="System Config"
+    icon={<RequestQuoteOutlinedIcon />}
+>
+    <Item
+        title="CC Type"
+        to="/costcentertype"
+        icon={<RequestQuoteOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="C Type"
+        to="/contacttype"
+        icon={<ContactPhoneOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Status"
+        to="/status"
+        icon={<InfoOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+
+
+<SubMenu
+    label="User Management"
+    icon={<GroupOutlinedIcon />}
+>
+    <Item
+        title="Manage User"
+        to="/user"
+        icon={<GroupOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Manage Contact"
+        to="/contact"
+        icon={<ContactPhoneOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Access Request"
+        to="/access-requests"
+        icon={<VpnKeyOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Users List"
+        to="/users-list"
+        icon={<PeopleOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
 
 
                     </Box>

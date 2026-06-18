@@ -41,6 +41,16 @@ import AccessPending from "./pages/accessRequest/AccessPending";
 import NotFound404 from "./pages/error/404NotFound";
 
 
+import Employee from "./pages/employee/Employee";
+import FinancialDefinition from "./pages/financialdefinition/FinancialDefinition";
+import Payroll from "./pages/payroll/Payroll";
+
+import LeaveCalendar from "./pages/leavecalendar/LeaveCalendar";
+import EmployeeLeaves from "./pages/employeeleaves/EmployeeLeaves";
+import LeaveDefinition from "./pages/leavedefinition/LeaveDefinition";
+import Attendance from "./pages/attendance/Attendance";
+
+
 const App = () => {
   const [theme, colorMode] = useMode();
   const location = useLocation();
@@ -96,6 +106,18 @@ const AppRoutes = () => (
          
             <Route path="access-requests" element={<AccessRequests />} />
             <Route path="users-list" element={<AccessUser />} />
+
+
+            <Route path="/employee" element={<Employee />} />
+
+            <Route path="/employee" element={<Employee />} />
+<Route path="/financial-definition" element={<FinancialDefinition />} />
+<Route path="/payroll" element={<Payroll />} />
+
+<Route path="/leave-calendar" element={<LeaveCalendar />} />
+<Route path="/employee-leaves" element={<EmployeeLeaves />} />
+<Route path="/leave-definition" element={<LeaveDefinition />} />
+<Route path="/attendance" element={<Attendance />} />
         </Route>
 
         {/* Catch-all */}
