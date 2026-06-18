@@ -113,13 +113,13 @@ const MyProSidebar = () => {
                     color: `${colors.greenAccent[500]} !important`,
                     backgroundColor: "transparent !important",
                 },
-                "& .ps-submenu-content, & .daWgIu": {
+                "& .ps-submenu-content, & .sub-menu-content": {
                     backgroundColor: "transparent !important",
                     boxShadow: "none !important",
                     border: "none !important",
                     paddingLeft: "20px !important",
                 },
-                "& .ps-submenu-content .menu-item.active": {
+                "& .ps-submenu-content .menu-item.active, & .sub-menu-content .menu-item.active": {
                     color: `${colors.blueAccent[500]} !important`, // blue active submenu item
                     backgroundColor: "transparent !important",
                 },
