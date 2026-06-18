@@ -29,7 +29,18 @@ import ContactPhoneOutlinedIcon from '@mui/icons-material/ContactPhoneOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import {QuestionMark} from "@mui/icons-material";
- 
+
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+
 const Item = ({ title, to, icon, selected, setSelected }) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
@@ -196,9 +207,9 @@ const MyProSidebar = () => {
                     )}
  
                     <Box paddingLeft={collapsed ? undefined : "10%"}>
-               
- 
- 
+                
+
+
 <Item
     title="Admin Dashboard"
     to="/"
@@ -206,7 +217,76 @@ const MyProSidebar = () => {
     selected={selected}
     setSelected={setSelected}
 />
- 
+
+
+
+<SubMenu
+    label="Leave Management"
+    icon={<EventNoteOutlinedIcon />}
+>
+    <Item
+        title="Leave Calendar"
+        to="/leave-calendar"
+        icon={<CalendarMonthOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Employee Leaves"
+        to="/employee-leaves"
+        icon={<EventAvailableOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Leave Definition"
+        to="/leave-definition"
+        icon={<AssignmentOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Attendance"
+        to="/attendance"
+        icon={<AccessTimeOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
+
+<SubMenu
+    label="HR Admin"
+    icon={<ManageAccountsOutlinedIcon />}
+>
+  <Item
+    title="Employee"
+    to="/employee"
+    icon={<PersonOutlineOutlinedIcon />}
+    selected={selected}
+    setSelected={setSelected}
+/>
+
+    <Item
+        title="Financial Definition"
+        to="/financial-definition"
+        icon={<AccountBalanceWalletOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Payroll"
+        to="/payroll"
+        icon={<PaymentsOutlinedIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+</SubMenu>
+
 {/* Master Data */}
 <SubMenu
     label="Master Data"
@@ -219,7 +299,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="State"
         to="/state"
@@ -227,7 +307,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Country"
         to="/country"
@@ -235,7 +315,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Department"
         to="/department"
@@ -243,7 +323,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Designation"
         to="/designation"
@@ -252,7 +332,7 @@ const MyProSidebar = () => {
         setSelected={setSelected}
     />
 </SubMenu>
- 
+
 {/* Entity Management */}
 <SubMenu
     label="Entity Management"
@@ -265,7 +345,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Cost Center"
         to="/costcenter"
@@ -274,28 +354,28 @@ const MyProSidebar = () => {
         setSelected={setSelected}
     />
 </SubMenu>
- 
+
 {/* System Config */}
 <SubMenu
     label="System Config"
     icon={<RequestQuoteOutlinedIcon />}
 >
     <Item
-        title="Cost Center Type"
+        title="CC Type"
         to="/costcentertype"
         icon={<RequestQuoteOutlinedIcon />}
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
-        title="Contact Type"
+        title="C Type"
         to="/contacttype"
         icon={<ContactPhoneOutlinedIcon />}
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Status"
         to="/status"
@@ -304,9 +384,9 @@ const MyProSidebar = () => {
         setSelected={setSelected}
     />
 </SubMenu>
- 
- 
- 
+
+
+
 <SubMenu
     label="User Management"
     icon={<GroupOutlinedIcon />}
@@ -318,7 +398,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Manage Contact"
         to="/contact"
@@ -326,7 +406,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Access Request"
         to="/access-requests"
@@ -334,7 +414,7 @@ const MyProSidebar = () => {
         selected={selected}
         setSelected={setSelected}
     />
- 
+
     <Item
         title="Users List"
         to="/users-list"
@@ -343,8 +423,8 @@ const MyProSidebar = () => {
         setSelected={setSelected}
     />
 </SubMenu>
- 
- 
+
+
                     </Box>
                 </Menu>
             </Sidebar>
