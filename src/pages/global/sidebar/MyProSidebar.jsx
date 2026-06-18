@@ -361,7 +361,7 @@ const MyProSidebar = () => {
     icon={<RequestQuoteOutlinedIcon />}
 >
     <Item
-        title="CC Type"
+        title="Cost Center Type"
         to="/costcentertype"
         icon={<RequestQuoteOutlinedIcon />}
         selected={selected}
@@ -369,7 +369,7 @@ const MyProSidebar = () => {
     />
 
     <Item
-        title="C Type"
+        title="Contact Type"
         to="/contacttype"
         icon={<ContactPhoneOutlinedIcon />}
         selected={selected}
