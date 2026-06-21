@@ -1,47 +1,59 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import { getBranches } from "../../services/hr/holidayCalendarService";
 
+const normalizeBranchOptions = (response) => {
+  const raw = Array.isArray(response)
+    ? response
+    : response?.data || response?.branches || [];
 
+  return raw.map((item) =>
+    typeof item === "string" ? item : item.branch_name || item.name || item.branch
+  );
+};
 
-const LeaveCalendarForm = ({
-  data,
-  add,
-  close,
-  editMode,
-}) => {
+const LeaveCalendarForm = ({ data, add, close, editMode }) => {
   const [formData, setFormData] = useState(data);
-
-  const [branchOptions] = useState([
-  "Hyderabad",
-  "Bangalore",
-  "Chennai",
-  "Mumbai",
-  "Pune",
-]);
+  const [branchOptions, setBranchOptions] = useState([]);
 
   useEffect(() => {
     setFormData(data);
   }, [data]);
 
-const handleChange = (e) => {
-  const { name, value, selectedOptions } = e.target;
+  useEffect(() => {
+    const fetchBranchOptions = async () => {
+      try {
+        const res = await getBranches();
+        setBranchOptions(normalizeBranchOptions(res));
+      } catch (error) {
+        console.error("Failed to fetch branches:", error);
+        toast.error("Failed to load branches.");
+      }
+    };
 
-  if (name === "branches") {
-    const selectedBranches = Array.from(
-      selectedOptions,
-      (option) => option.value
-    );
+    fetchBranchOptions();
+  }, []);
 
-    setFormData({
-      ...formData,
-      branches: selectedBranches,
-    });
-  } else {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  }
-};
+  const handleChange = (e) => {
+    const { name, value, selectedOptions } = e.target;
+
+    if (name === "branches") {
+      const selectedBranches = Array.from(
+        selectedOptions,
+        (option) => option.value
+      );
+
+      setFormData({
+        ...formData,
+        branches: selectedBranches,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -61,9 +73,7 @@ const handleChange = (e) => {
           <form onSubmit={handleSubmit}>
             <div className="modal-header">
               <h5 className="modal-title">
-                {editMode
-                  ? "Edit Holiday"
-                  : "Add Holiday"}
+                {editMode ? "Edit Holiday" : "Add Holiday"}
               </h5>
 
               <button
@@ -74,7 +84,6 @@ const handleChange = (e) => {
             </div>
 
             <div className="modal-body">
-
               <input
                 type="text"
                 name="holiday_name"
@@ -94,29 +103,29 @@ const handleChange = (e) => {
                 required
               />
 
-            <div className="mb-3">
-  <label className="form-label">Branches</label>
+              <div className="mb-3">
+                <label className="form-label">Branches</label>
 
-  <select
-    multiple
-    name="branches"
-    value={formData.branches || []}
-    onChange={handleChange}
-    className="form-control"
-    style={{ height: "120px" }}
-    required
-  >
-    {branchOptions.map((branch) => (
-      <option key={branch} value={branch}>
-        {branch}
-      </option>
-    ))}
-  </select>
+                <select
+                  multiple
+                  name="branches"
+                  value={formData.branches || []}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ height: "120px" }}
+                  required
+                >
+                  {branchOptions.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
+                </select>
 
-  <small className="text-muted">
-    Hold Ctrl and select multiple branches
-  </small>
-</div>
+                <small className="text-muted">
+                  Hold Ctrl and select multiple branches
+                </small>
+              </div>
 
               <textarea
                 name="description"
@@ -126,14 +135,10 @@ const handleChange = (e) => {
                 className="form-control"
                 rows="3"
               />
-
             </div>
 
             <div className="modal-footer">
-              <button
-                type="submit"
-                className="btn btn-success"
-              >
+              <button type="submit" className="btn btn-success">
                 Save
               </button>
 
@@ -145,7 +150,6 @@ const handleChange = (e) => {
                 Cancel
               </button>
             </div>
-
           </form>
         </div>
       </div>

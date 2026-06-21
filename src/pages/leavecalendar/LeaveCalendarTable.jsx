@@ -1,9 +1,5 @@
 import { Box } from "@mui/material";
-
 import { useState } from "react";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-
 
 function LeaveCalendarTable({
   holidays,
@@ -11,79 +7,51 @@ function LeaveCalendarTable({
   editHoliday,
   currentPage,
   itemsPerPage,
+  total,
   onPageChange,
   onLimitChange,
   onSearch,
   searchTerm,
 }) {
+  const [sortConfig, setSortConfig] = useState({
+    key: "holiday_name",
+    direction: "asc",
+  });
 
+  const sortedHolidays = [...holidays].sort((a, b) => {
+    const key = sortConfig.key;
+    const dir = sortConfig.direction === "asc" ? 1 : -1;
 
+    const aValue = String(a[key] || "").toLowerCase();
+    const bValue = String(b[key] || "").toLowerCase();
 
-    
-     const [sortConfig, setSortConfig] = useState({
-  key: "holiday_name",
-  direction: "asc",
-});
+    if (aValue < bValue) return -1 * dir;
+    if (aValue > bValue) return 1 * dir;
+    return 0;
+  });
 
-/* FILTER */
-const filteredHolidays = holidays.filter(
-  (holiday) =>
-    holiday.holiday_name
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    holiday.description
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    (Array.isArray(holiday.branches)
-      ? holiday.branches.join(", ")
-      : holiday.branches || ""
-    )
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-);
+  const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
 
-/* SORT */
-const sortedHolidays = [...filteredHolidays].sort((a, b) => {
-  const key = sortConfig.key;
-  const dir = sortConfig.direction === "asc" ? 1 : -1;
+  const goToPage = (pageNum) => {
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      onPageChange(pageNum);
+    }
+  };
 
-  const aValue = String(a[key] || "").toLowerCase();
-  const bValue = String(b[key] || "").toLowerCase();
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction:
+        prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
 
-  if (aValue < bValue) return -1 * dir;
-  if (aValue > bValue) return 1 * dir;
-  return 0;
-});
-
-/* PAGINATION */
-
-
-  const totalPages =
-  Math.ceil(sortedHolidays.length / itemsPerPage) || 1;
-
-const startIndex =
-  (currentPage - 1) * itemsPerPage;
-
-const paginatedHolidays = sortedHolidays.slice(
-  startIndex,
-  startIndex + itemsPerPage
-);
-
-// ADD THIS FUNCTION
-const goToPage = (pageNum) => {
-  if (pageNum >= 1 && pageNum <= totalPages) {
-    onPageChange(pageNum);
-  }
-};
-
+  const startSerial = (currentPage - 1) * itemsPerPage;
 
   return (
     <Box m="20px">
-     
-
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-
-          <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
+        <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
           <div
             className="position-relative me-3 mb-2"
             style={{ flex: 1, minWidth: "200px" }}
@@ -117,8 +85,6 @@ const goToPage = (pageNum) => {
           </div>
 
           <div className="d-flex align-items-center mb-2">
-            
-
             <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
@@ -128,7 +94,6 @@ const goToPage = (pageNum) => {
               value={itemsPerPage}
               onChange={(e) => {
                 onLimitChange(parseInt(e.target.value, 10));
-                onPageChange(1);
               }}
             >
               {[5, 10, 20, 50].map((num) => (
@@ -137,7 +102,6 @@ const goToPage = (pageNum) => {
                 </option>
               ))}
             </select>
-      
           </div>
         </div>
 
@@ -145,49 +109,60 @@ const goToPage = (pageNum) => {
           <thead className="table-dark">
             <tr>
               <th>Sr No</th>
-              <th>Holiday Name</th>
-              <th>Holiday Date</th>
+              <th
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSort("holiday_name")}
+              >
+                Holiday Name
+              </th>
+              <th
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSort("holiday_date")}
+              >
+                Holiday Date
+              </th>
               <th>Branches</th>
-              <th>Description</th>
+              <th
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSort("description")}
+              >
+                Description
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {holidays.length === 0 ? (
+            {sortedHolidays.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center">
                   No Records Found
                 </td>
               </tr>
             ) : (
-              holidays.map((holiday, index) => (
-                <tr key={holiday.id}>
-                  <td>{index + 1}</td>
+              sortedHolidays.map((holiday, index) => (
+                <tr key={holiday.holiday_id}>
+                  <td>{startSerial + index + 1}</td>
                   <td>{holiday.holiday_name}</td>
-                  <td>{holiday.holiday_date}</td>
+                  <td>{new Date(holiday.holiday_date).toLocaleDateString()}</td>
                   <td>
-  {Array.isArray(holiday.branches)
-    ? holiday.branches.join(", ")
-    : holiday.branches}
-</td>
+                    {Array.isArray(holiday.branches)
+                      ? holiday.branches.join(", ")
+                      : holiday.branches}
+                  </td>
                   <td>{holiday.description}</td>
 
                   <td>
                     <button
                       className="btn btn-sm btn-primary me-2"
-                      onClick={() =>
-                        editHoliday(holiday)
-                      }
+                      onClick={() => editHoliday(holiday)}
                     >
                       Edit
                     </button>
 
                     <button
                       className="btn btn-sm btn-danger"
-                      onClick={() =>
-                        deleteHoliday(holiday.id)
-                      }
+                      onClick={() => deleteHoliday(holiday.holiday_id)}
                     >
                       Delete
                     </button>
@@ -198,10 +173,9 @@ const goToPage = (pageNum) => {
           </tbody>
         </table>
 
-          {/* PAGINATION */}
         <div className="d-flex justify-content-between align-items-center mt-3">
           <span className="text-body">
-            Showing {paginatedHolidays.length} of {sortedHolidays.length} holidays
+            Showing {sortedHolidays.length} of {total} holidays
           </span>
 
           <div>
@@ -236,7 +210,6 @@ const goToPage = (pageNum) => {
             </button>
           </div>
         </div>
-
       </div>
     </Box>
   );
