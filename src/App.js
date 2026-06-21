@@ -48,6 +48,8 @@ import Payroll from "./pages/payroll/Payroll";
 import LeaveCalendar from "./pages/leavecalendar/LeaveCalendar";
 import EmployeeLeaves from "./pages/employeeleaves/EmployeeLeaves";
 import LeaveDefinition from "./pages/leavedefinition/LeaveDefinition";
+import LeaveType from "./pages/leavetype/LeaveType";
+import LeavePolicy from "./pages/leavepolicy/LeavePolicy";
 import Attendance from "./pages/attendance/Attendance";
 
 
@@ -118,6 +120,11 @@ const AppRoutes = () => (
 <Route path="/leave-calendar" element={<LeaveCalendar />} />
 <Route path="/employee-leaves" element={<EmployeeLeaves />} />
 <Route path="/leave-definition" element={<LeaveDefinition />} />
+<Route path="/leave-type" element={<LeaveType />} />
+<Route
+  path="/leave-policy"
+  element={<LeavePolicy />}
+/>
 <Route path="/attendance" element={<Attendance />} />
         </Route>
 

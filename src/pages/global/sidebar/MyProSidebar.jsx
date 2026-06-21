@@ -249,6 +249,22 @@ const MyProSidebar = () => {
     />
 
     <Item
+  title="Leave Type"
+  to="/leave-type"
+  icon={<RequestQuoteOutlinedIcon />}
+  selected={selected}
+  setSelected={setSelected}
+/>
+
+<Item
+  title="Leave Policy"
+  to="/leave-policy"
+  icon={<RequestQuoteOutlinedIcon />}
+  selected={selected}
+  setSelected={setSelected}
+/>
+
+    <Item
         title="Attendance"
         to="/attendance"
         icon={<AccessTimeOutlinedIcon />}
