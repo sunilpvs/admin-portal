@@ -1,9 +1,30 @@
-node_modules
-build
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/.venv/
+
+# Build
+build/
+frontend/dist/
+dist/
+
+# Env / secrets
 .env.production
-.idea
-README.md
-scripts
+backend/.env.local
+frontend/.env.local
 
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.pyc
+__pycache__/
+.pytest_cache/
+*.log
 
+# Misc
+scripts/
 
+# Local env files (examples are committed)
+backend/.env
+frontend/.env

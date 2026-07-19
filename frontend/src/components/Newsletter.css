@@ -1,0 +1,72 @@
+.newsletter {
+  padding: 4.5rem 1.5rem;
+  border-top: 1px solid #1a1a1a;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .newsletter {
+    padding: 5.5rem 2.5rem;
+  }
+}
+
+.newsletter .eyebrow {
+  margin-bottom: 1rem;
+}
+
+.newsletter h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+
+.newsletter p {
+  font-size: 0.875rem;
+  color: var(--faint);
+  margin-bottom: 2rem;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  color: var(--ink);
+  outline: none;
+}
+
+.newsletter-form input::placeholder {
+  color: #3a3a3a;
+}
+
+.newsletter-form button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 2px;
+}
+
+.newsletter-success {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.newsletter-error {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--accent-warm);
+}

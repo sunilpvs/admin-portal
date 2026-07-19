@@ -1,0 +1,89 @@
+.site-footer {
+  border-top: 1px solid #1a1a1a;
+  background: var(--bg);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+  padding: 3rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    padding: 3rem 2.5rem;
+  }
+}
+
+.footer-brand .brand {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.footer-brand p {
+  max-width: 16rem;
+  font-size: 0.875rem;
+  color: var(--faint);
+  margin-bottom: 1.25rem;
+}
+
+.socials {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.socials a {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+
+.footer-col h4 {
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: var(--faint);
+  margin-bottom: 1rem;
+}
+
+.footer-col a {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--dim);
+  margin-bottom: 0.65rem;
+  transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: var(--ink);
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 2rem;
+  border-top: 1px solid #1a1a1a;
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    padding: 1.25rem 2.5rem 2rem;
+  }
+}
+
+.pay-methods {
+  display: flex;
+  gap: 0.75rem;
+  letter-spacing: 0.08em;
+}
