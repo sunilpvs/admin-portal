@@ -5,6 +5,18 @@ import { useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+const getSearchableText = (department) =>
+  [
+    department.name,
+    department.unit,
+    department.department,
+    department.code,
+    department.status,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
 function DepartmentTable({
   departments,
   deleteDepartment,
@@ -22,27 +34,24 @@ function DepartmentTable({
     direction: "asc",
   });
 
-  // Filter departments
-  const filteredDepartments = departments.filter(
-    (department) =>
-      department.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      department.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      department.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDepartments = departments.filter((department) =>
+    getSearchableText(department).includes(searchTerm.toLowerCase())
   );
 
-  // Sort departments
   const sortedDepartments = [...filteredDepartments].sort((a, b) => {
     const key = sortConfig.key;
     const dir = sortConfig.direction === "asc" ? 1 : -1;
 
-    if (a[key].toLowerCase() < b[key].toLowerCase()) return -1 * dir;
-    if (a[key].toLowerCase() > b[key].toLowerCase()) return 1 * dir;
+    const aValue = String(a[key] ?? "").toLowerCase();
+    const bValue = String(b[key] ?? "").toLowerCase();
+
+    if (aValue < bValue) return -1 * dir;
+    if (aValue > bValue) return 1 * dir;
     return 0;
   });
 
   const totalPages = Math.ceil(sortedDepartments.length / itemsPerPage) || 1;
 
-  // Pagination
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedDepartments = sortedDepartments.slice(
     startIndex,
@@ -73,12 +82,13 @@ function DepartmentTable({
     return "";
   };
 
-  // ✅ Export Excel
   const handleExportExcel = () => {
     const exportData = sortedDepartments.map((item, index) => ({
       "Sr. No.": index + 1,
       Name: item.name,
+      Unit: item.unit,
       Code: item.code,
+      Department: item.department,
       Status: item.status,
     }));
 
@@ -103,43 +113,38 @@ function DepartmentTable({
       <Header title="Department Management" subtitle="Admin/Department" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-        {/* Search + Export + Items per page */}
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-      
-             <div
+          <div
             className="position-relative me-3 mb-2"
             style={{ flex: 1, minWidth: "200px" }}
           >
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => onSearch(e.target.value)}
-                className="form-control"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => onSearch("")}
-                  style={{
-                    position: "absolute",
-                    right: "10px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    border: "none",
-                    background: "transparent",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    color: "#999",
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-
-         
-      
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              className="form-control"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => onSearch("")}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  border: "none",
+                  background: "transparent",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  color: "#999",
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
 
           <div className="d-flex align-items-center mb-2">
             <label className="form-label me-2 mb-0 text-body">
@@ -160,7 +165,7 @@ function DepartmentTable({
                 </option>
               ))}
             </select>
-               <button
+            <button
               className="btn btn-success ms-3 mb-2"
               onClick={handleExportExcel}
             >
@@ -169,7 +174,6 @@ function DepartmentTable({
           </div>
         </div>
 
-        {/* Table */}
         <div className="table-responsive">
           <table className="table table-hover table-bordered align-middle text-center">
             <thead className="table-dark">
@@ -178,8 +182,18 @@ function DepartmentTable({
                 <th onClick={() => handleSort("name")} style={{ cursor: "pointer" }}>
                   Name <span className="float-end">{getSortArrow("name")}</span>
                 </th>
+                <th onClick={() => handleSort("unit")} style={{ cursor: "pointer" }}>
+                  Unit <span className="float-end">{getSortArrow("unit")}</span>
+                </th>
                 <th onClick={() => handleSort("code")} style={{ cursor: "pointer" }}>
                   Code <span className="float-end">{getSortArrow("code")}</span>
+                </th>
+                <th
+                  onClick={() => handleSort("department")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Department{" "}
+                  <span className="float-end">{getSortArrow("department")}</span>
                 </th>
                 <th onClick={() => handleSort("status")} style={{ cursor: "pointer" }}>
                   Status <span className="float-end">{getSortArrow("status")}</span>
@@ -191,7 +205,7 @@ function DepartmentTable({
             <tbody>
               {paginatedDepartments.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-muted">
+                  <td colSpan="7" className="text-muted">
                     No departments found.
                   </td>
                 </tr>
@@ -200,7 +214,9 @@ function DepartmentTable({
                   <tr key={item.id}>
                     <td>{startIndex + index + 1}</td>
                     <td>{item.name}</td>
+                    <td>{item.unit}</td>
                     <td>{item.code}</td>
+                    <td>{item.department}</td>
                     <td>{item.status}</td>
                     <td>
                       <button
@@ -223,7 +239,6 @@ function DepartmentTable({
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="d-flex justify-content-between align-items-center mt-3">
           <span className="text-body">
             Showing {paginatedDepartments.length} of{" "}

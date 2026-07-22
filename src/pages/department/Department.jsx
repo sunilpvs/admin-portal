@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { saveAs } from "file-saver";
 import DepartmentForm from "./DepartmentForm";
+import DepartmentImportModal from "./DepartmentImportModal";
 import Table from "./DepartmentTable";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-hot-toast";
@@ -9,7 +11,17 @@ import {
   addDepartment,
   editDepartment,
   deleteDepartment,
+  getExcelTemplate,
 } from "../../services/admin/departmentService";
+
+const getTemplateFilename = (response) => {
+  const contentDisposition = response?.headers?.["content-disposition"];
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+    if (match?.[1]) return match[1];
+  }
+  return "Department_Template.xlsx";
+};
 
 const Department = () => {
   const [departments, setAllDepartments] = useState([]);
@@ -18,43 +30,50 @@ const Department = () => {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [openForm, setOpenForm] = useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
 
-    // Fetch all cities once
-    const fetchDepartments = async () => {
-      try {
-        const res = await getPaginatedDepartments(1, 1000); // large number to fetch all
-        setAllDepartments(res.data.departments || []);
-      } catch (err) {
-        console.error("Failed to fetch departments", err);
-        toast.error("Failed to load cities");
-      }
-    };
-  
-    useEffect(() => {
+  const fetchDepartments = async () => {
+    try {
+      const res = await getPaginatedDepartments(1, 1000);
+      setAllDepartments(res.data.departments || []);
+    } catch (err) {
+      console.error("Failed to fetch departments", err);
+      toast.error("Failed to load departments");
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDepartment(id);
+      toast.success("Department deleted successfully");
       fetchDepartments();
-    }, []);
-
-
-   const handleDelete = async (id) => {
-      try {
-        await deleteDepartment(id);
-        toast.success("Departments deleted successfully");
-        fetchDepartments();
-      } catch (err) {
-        console.error("Delete failed", err);
-        toast.error("Failed to delete city");
-      }
-    };
+    } catch (err) {
+      console.error("Delete failed", err);
+      toast.error("Failed to delete department");
+    }
+  };
 
   const handleSubmit = async (formData) => {
+    const payload = {
+      unit: formData.unit,
+      department: formData.department,
+      code: formData.code,
+      status: formData.status,
+    };
+
     try {
       if (editMode) {
-        await editDepartment(formData.id, formData);
-        toast.success("City updated successfully");
+        await editDepartment(formData.id, payload);
+        toast.success("Department updated successfully");
       } else {
-        await addDepartment(formData);
+        await addDepartment(payload);
         toast.success("Department added successfully");
       }
       setOpenForm(false);
@@ -64,7 +83,11 @@ const Department = () => {
       setPage(1);
     } catch (err) {
       console.error("Submit failed", err);
-      toast.error("Failed to save city");
+      const message =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        "Failed to save department";
+      toast.error(message);
     }
   };
 
@@ -75,11 +98,34 @@ const Department = () => {
   };
 
   const handleAdd = () => {
-    setSelectedDepartment({ name: "", code: "", status: "" });
+    setSelectedDepartment({ unit: "", department: "", code: "", status: "" });
     setEditMode(false);
     setOpenForm(true);
   };
 
+  const handleDownloadTemplate = async () => {
+    if (isDownloadingTemplate) return;
+
+    setIsDownloadingTemplate(true);
+    const toastId = toast.loading("Downloading template...");
+
+    try {
+      const response = await getExcelTemplate();
+      const blob = new Blob([response.data], {
+        type:
+          response.headers["content-type"] ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(blob, getTemplateFilename(response));
+      toast.success("Template downloaded successfully", { id: toastId });
+    } catch (err) {
+      console.error("Template download failed", err);
+      toast.error("Failed to download template", { id: toastId });
+    } finally {
+      setIsDownloadingTemplate(false);
+    }
+  };
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -107,9 +153,24 @@ const Department = () => {
     <div className="container mt-4">
       <div className="row justify-content-center">
         <div className="col-md-10">
-          <button className="btn btn-primary float-end mt-4" onClick={handleAdd}>
-            + Add Department
-          </button>
+          <div className="d-flex justify-content-end gap-2 mt-4 flex-wrap">
+            <button
+              className="btn btn-outline-secondary"
+              onClick={handleDownloadTemplate}
+              disabled={isDownloadingTemplate}
+            >
+              {isDownloadingTemplate ? "Downloading..." : "Download Template"}
+            </button>
+            <button
+              className="btn btn-outline-success"
+              onClick={() => setOpenImportModal(true)}
+            >
+              Import Excel
+            </button>
+            <button className="btn btn-primary" onClick={handleAdd}>
+              + Add Department
+            </button>
+          </div>
 
           <Table
             departments={departments}
@@ -130,6 +191,13 @@ const Department = () => {
               add={handleSubmit}
               close={closeForm}
               editMode={editMode}
+            />
+          )}
+
+          {openImportModal && (
+            <DepartmentImportModal
+              close={() => setOpenImportModal(false)}
+              onImportComplete={fetchDepartments}
             />
           )}
         </div>
