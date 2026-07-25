@@ -1,70 +1,88 @@
 import PropTypes from "prop-types";
 import { Box } from "@mui/material";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import Header from "../../components/Header";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+const getDisplayName = (employee) =>
+  employee.display_name ||
+  `${employee.first_name || ""} ${employee.last_name || ""}`.trim() ||
+  "—";
+
+const getEmail = (employee) => employee.email || employee.personal_email || "—";
+
+const getMobile = (employee) => employee.mobile || "—";
+
+const getEmployeeCode = (employee) => employee.old_emp_code || employee.emp_code || "—";
+
 function EmployeeTable({
   employees,
-  deleteEmployee,
-  editEmployee,
+  total,
   currentPage,
   itemsPerPage,
+  loading,
   onPageChange,
   onLimitChange,
   onSearch,
   searchTerm,
+  onView,
 }) {
   const [sortConfig, setSortConfig] = useState({
-    key: "firstName",
+    key: "displayName",
     direction: "asc",
   });
 
-  /* -------------------- FILTER -------------------- */
-
-  const filteredEmployees = employees.filter((employee) => {
+  const filteredEmployees = useMemo(() => {
     const search = searchTerm.toLowerCase();
+    if (!search) return employees;
 
-    return (
-      (employee.firstName || "").toLowerCase().includes(search) ||
-      (employee.lastName || "").toLowerCase().includes(search) ||
-      (employee.displayName || "").toLowerCase().includes(search) ||
-      (employee.personalEmail || "").toLowerCase().includes(search) ||
-      (employee.mobileNo || "").toLowerCase().includes(search) ||
-      (employee.employeeType || "").toLowerCase().includes(search) ||
-      (employee.entity || "").toLowerCase().includes(search) ||
-      (employee.department || "").toLowerCase().includes(search) ||
-      (employee.designation || "").toLowerCase().includes(search)
-    );
-  });
+    return employees.filter((employee) => {
+      const displayName = getDisplayName(employee).toLowerCase();
+      const email = getEmail(employee).toLowerCase();
+      const mobile = getMobile(employee).toLowerCase();
+      const empCode = getEmployeeCode(employee).toLowerCase();
 
-  /* -------------------- SORT -------------------- */
+      return (
+        displayName.includes(search) ||
+        email.includes(search) ||
+        mobile.includes(search) ||
+        empCode.includes(search)
+      );
+    });
+  }, [employees, searchTerm]);
 
-  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
-    const key = sortConfig.key;
-    const dir = sortConfig.direction === "asc" ? 1 : -1;
+  const sortedEmployees = useMemo(() => {
+    return [...filteredEmployees].sort((a, b) => {
+      const key = sortConfig.key;
+      const dir = sortConfig.direction === "asc" ? 1 : -1;
 
-    const valueA = String(a[key] || "").toLowerCase();
-    const valueB = String(b[key] || "").toLowerCase();
+      let valueA = "";
+      let valueB = "";
 
-    if (valueA < valueB) return -1 * dir;
-    if (valueA > valueB) return 1 * dir;
+      if (key === "displayName") {
+        valueA = getDisplayName(a).toLowerCase();
+        valueB = getDisplayName(b).toLowerCase();
+      } else if (key === "email") {
+        valueA = getEmail(a).toLowerCase();
+        valueB = getEmail(b).toLowerCase();
+      } else if (key === "mobile") {
+        valueA = getMobile(a).toLowerCase();
+        valueB = getMobile(b).toLowerCase();
+      } else if (key === "emp_code") {
+        valueA = getEmployeeCode(a).toLowerCase();
+        valueB = getEmployeeCode(b).toLowerCase();
+      }
 
-    return 0;
-  });
+      if (valueA < valueB) return -1 * dir;
+      if (valueA > valueB) return 1 * dir;
+      return 0;
+    });
+  }, [filteredEmployees, sortConfig]);
 
-  /* -------------------- PAGINATION -------------------- */
-
-  const totalPages =
-    Math.ceil(sortedEmployees.length / itemsPerPage) || 1;
-
+  const totalPages = Math.ceil(total / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
-
-  const paginatedEmployees = sortedEmployees.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
 
   const goToPage = (pageNum) => {
     if (pageNum >= 1 && pageNum <= totalPages) {
@@ -72,14 +90,11 @@ function EmployeeTable({
     }
   };
 
-  /* -------------------- SORT HANDLER -------------------- */
-
   const handleSort = (column) => {
     if (sortConfig.key === column) {
       setSortConfig({
         key: column,
-        direction:
-          sortConfig.direction === "asc" ? "desc" : "asc",
+        direction: sortConfig.direction === "asc" ? "desc" : "asc",
       });
     } else {
       setSortConfig({
@@ -93,50 +108,22 @@ function EmployeeTable({
     if (sortConfig.key === column) {
       return sortConfig.direction === "asc" ? "▲" : "▼";
     }
-
     return "";
   };
-
-  /* -------------------- EXPORT EXCEL -------------------- */
 
   const handleExportExcel = () => {
     const exportData = sortedEmployees.map((employee, index) => ({
       "Sr. No.": index + 1,
-      "First Name": employee.firstName,
-      "Last Name": employee.lastName,
-      "Display Name": employee.displayName,
-      Entity: employee.entity,
-      Department: employee.department,
-      Designation: employee.designation,
-      "Date of Birth": employee.dob,
-      "Personal Email": employee.personalEmail,
-      "Mobile No": employee.mobileNo,
-      "Employee Type": employee.employeeType,
-      "Joining Date": employee.joiningDate,
-      "Expiry Date": employee.expiryDate,
-      Country: employee.country,
-      State: employee.state,
-      City: employee.city,
-      PIN: employee.pin,
-      UAN: employee.uan,
-      "Aadhar No": employee.aadharNo,
-      PAN: employee.panNo,
-      "ESI No": employee.esiNo,
-      Bank: employee.bankName,
-      "Account No": employee.accountNo,
-      IFSC: employee.ifscCode,
+      "Display Name": getDisplayName(employee),
+      Email: getEmail(employee),
+      Mobile: getMobile(employee),
+      "Employee Code": getEmployeeCode(employee),
+      ID: employee.id,
     }));
 
-    const worksheet =
-      XLSX.utils.json_to_sheet(exportData);
-
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Employees"
-    );
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
 
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
@@ -150,33 +137,34 @@ function EmployeeTable({
     saveAs(fileData, "Employee_List.xlsx");
   };
 
+  const pageNumbers = [];
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  for (let i = startPage; i <= endPage; i += 1) {
+    pageNumbers.push(i);
+  }
+
   return (
     <Box m="20px">
-      <Header
-        title="Employee Management"
-        subtitle="Admin / Employee"
-      />
+      <Header title="Employee Management" subtitle="Admin / Employee" />
 
       <div className="container mt-4 p-3 bg-white rounded shadow-sm">
-
-        {/* SEARCH + LIMIT + EXPORT */}
-
         <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-
           <div
             className="position-relative me-3 mb-2"
-            style={{
-              flex: 1,
-              minWidth: "200px",
-            }}
+            style={{ flex: 1, minWidth: "200px" }}
           >
             <input
               type="text"
               placeholder="Search Employee..."
               value={searchTerm}
-              onChange={(e) =>
-                onSearch(e.target.value)
-              }
+              onChange={(e) => onSearch(e.target.value)}
               className="form-control"
             />
 
@@ -188,8 +176,7 @@ function EmployeeTable({
                   position: "absolute",
                   right: "10px",
                   top: "50%",
-                  transform:
-                    "translateY(-50%)",
+                  transform: "translateY(-50%)",
                   border: "none",
                   background: "transparent",
                   fontSize: "16px",
@@ -203,7 +190,6 @@ function EmployeeTable({
           </div>
 
           <div className="d-flex align-items-center mb-2">
-
             <label className="form-label me-2 mb-0 text-body">
               Items per page:
             </label>
@@ -213,18 +199,12 @@ function EmployeeTable({
               style={{ width: "120px" }}
               value={itemsPerPage}
               onChange={(e) => {
-                onLimitChange(
-                  parseInt(e.target.value, 10)
-                );
-
+                onLimitChange(parseInt(e.target.value, 10));
                 onPageChange(1);
               }}
             >
               {[5, 10, 20, 50].map((num) => (
-                <option
-                  key={num}
-                  value={num}
-                >
+                <option key={num} value={num}>
                   {num}
                 </option>
               ))}
@@ -236,225 +216,127 @@ function EmployeeTable({
             >
               Export Excel
             </button>
-
           </div>
         </div>
 
-        {/* TABLE */}
-
         <div className="table-responsive">
           <table className="table table-hover table-bordered align-middle text-center">
-
             <thead className="table-dark">
-
               <tr>
                 <th>Sr. No.</th>
-
                 <th
-                  onClick={() =>
-                    handleSort("displayName")
-                  }
+                  onClick={() => handleSort("displayName")}
                   style={{ cursor: "pointer" }}
                 >
-                  Display Name{" "}
+                  Name{" "}
                   <span className="float-end">
                     {getSortArrow("displayName")}
                   </span>
                 </th>
-
                 <th
-                  onClick={() =>
-                    handleSort("entity")
-                  }
+                  onClick={() => handleSort("email")}
                   style={{ cursor: "pointer" }}
                 >
-                  Entity{" "}
-                  <span className="float-end">
-                    {getSortArrow("entity")}
-                  </span>
+                  Email{" "}
+                  <span className="float-end">{getSortArrow("email")}</span>
                 </th>
-
                 <th
-                  onClick={() =>
-                    handleSort("department")
-                  }
+                  onClick={() => handleSort("mobile")}
                   style={{ cursor: "pointer" }}
                 >
-                  Department{" "}
-                  <span className="float-end">
-                    {getSortArrow("department")}
-                  </span>
+                  Mobile{" "}
+                  <span className="float-end">{getSortArrow("mobile")}</span>
                 </th>
-
                 <th
-                  onClick={() =>
-                    handleSort("designation")
-                  }
+                  onClick={() => handleSort("emp_code")}
                   style={{ cursor: "pointer" }}
                 >
-                  Designation{" "}
+                  Employee Code{" "}
                   <span className="float-end">
-                    {getSortArrow("designation")}
+                    {getSortArrow("emp_code")}
                   </span>
                 </th>
-
-                <th>Mobile No</th>
-
-                <th>Employee Type</th>
-
-                <th>Joining Date</th>
-
-                <th>Actions</th>
+                <th style={{ display: "none" }}>ID</th>
+                <th>View</th>
               </tr>
-
             </thead>
 
             <tbody>
-
-              {paginatedEmployees.length === 0 ? (
-
+              {loading ? (
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="text-muted"
-                  >
+                  <td colSpan="7" className="text-muted">
+                    Loading employees...
+                  </td>
+                </tr>
+              ) : sortedEmployees.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-muted">
                     No employees found.
                   </td>
                 </tr>
-
               ) : (
-
-                paginatedEmployees.map(
-                  (data, index) => (
-
-                    <tr key={data.id}>
-
-                      <td>
-                        {startIndex + index + 1}
-                      </td>
-
-                      <td>
-                        {data.displayName ||
-                          `${data.firstName || ""} ${
-                            data.lastName || ""
-                          }`}
-                      </td>
-
-                      <td>
-                        {data.entity}
-                      </td>
-
-                      <td>
-                        {data.department}
-                      </td>
-
-                      <td>
-                        {data.designation}
-                      </td>
-
-                      <td>
-                        {data.mobileNo}
-                      </td>
-
-                      <td>
-                        {data.employeeType}
-                      </td>
-
-                      <td>
-                        {data.joiningDate}
-                      </td>
-
-                      <td>
-
-                        <button
-                          className="btn btn-sm btn-outline-primary me-2"
-                          onClick={() =>
-                            editEmployee(data)
-                          }
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() =>
-                            deleteEmployee(data.id)
-                          }
-                        >
-                          Delete
-                        </button>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )
-
+                sortedEmployees.map((data, index) => (
+                  <tr key={data.id}>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{getDisplayName(data)}</td>
+                    <td>{getEmail(data)}</td>
+                    <td>{getMobile(data)}</td>
+                    <td>{getEmployeeCode(data)}</td>
+                    <td style={{ display: "none" }}>{data.id}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        title="View employee details"
+                        onClick={() => onView(data.id)}
+                      >
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
               )}
-
             </tbody>
-
           </table>
         </div>
 
-        {/* PAGINATION */}
-
         <div className="d-flex justify-content-between align-items-center mt-3">
-
           <span className="text-body">
-            Showing {paginatedEmployees.length} of{" "}
-            {sortedEmployees.length} employees
+            Showing {sortedEmployees.length} of {total} employees
           </span>
 
           <div>
-
             <button
               className="btn btn-outline-secondary btn-sm me-1"
-              onClick={() =>
-                goToPage(currentPage - 1)
-              }
+              onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
               Prev
             </button>
 
-            {[...Array(totalPages)].map(
-              (_, index) => (
-
-                <button
-                  key={index}
-                  className={`btn btn-sm me-1 ${
-                    currentPage === index + 1
-                      ? "btn-primary"
-                      : "btn-outline-secondary"
-                  }`}
-                  onClick={() =>
-                    goToPage(index + 1)
-                  }
-                >
-                  {index + 1}
-                </button>
-
-              )
-            )}
+            {pageNumbers.map((pageNum) => (
+              <button
+                key={pageNum}
+                className={`btn btn-sm me-1 ${
+                  currentPage === pageNum
+                    ? "btn-primary"
+                    : "btn-outline-secondary"
+                }`}
+                onClick={() => goToPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
 
             <button
               className="btn btn-outline-secondary btn-sm"
-              onClick={() =>
-                goToPage(currentPage + 1)
-              }
-              disabled={
-                currentPage === totalPages
-              }
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
             >
               Next
             </button>
-
           </div>
-
         </div>
-
       </div>
     </Box>
   );
@@ -462,14 +344,15 @@ function EmployeeTable({
 
 EmployeeTable.propTypes = {
   employees: PropTypes.array.isRequired,
-  deleteEmployee: PropTypes.func.isRequired,
-  editEmployee: PropTypes.func.isRequired,
+  total: PropTypes.number.isRequired,
   currentPage: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
+  loading: PropTypes.bool,
   onPageChange: PropTypes.func.isRequired,
   onLimitChange: PropTypes.func.isRequired,
   onSearch: PropTypes.func.isRequired,
   searchTerm: PropTypes.string.isRequired,
+  onView: PropTypes.func.isRequired,
 };
 
 export default EmployeeTable;

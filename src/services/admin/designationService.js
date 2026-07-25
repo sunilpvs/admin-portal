@@ -19,3 +19,13 @@ export const editDesignation = (id, payload) => {
 export const deleteDesignation = (id) => {
   return axiosInstance.delete(`api/admin/designation?id=${id}`);
 };
+
+export const getDesignationCombo = async () => {
+  try {
+    const response = await axiosInstance.get(`api/admin/designation?type=combo`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching designation combo list:", error);
+    throw error;
+  }
+};

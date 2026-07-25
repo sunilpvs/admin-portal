@@ -17,6 +17,11 @@ export const getEntityCombo = (fields = ['id', 'entity_name']) => {
     return axiosInstance.get(`api/admin/entity?type=combo&fields=${fieldParams}`);
 };
 
+export const getDomainsCombo = (fields = ['domain_name']) => {
+    const fieldParams = fields.join(',');
+    return axiosInstance.get(`api/admin/entity?type=combo&fields=${fieldParams}`);
+};
+
 // Get Primary Contact List
 export const getPrimaryContacts = () => {
 

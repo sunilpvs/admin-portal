@@ -14,12 +14,6 @@ export const getStateById = (id) => {
   return axiosInstance.get(`api/admin/states?id=${id}`);
 };
 
-// Get state combo list (optional fields can be passed)
-export const getCityCombo = (fields = ['id', 'state']) => {
-  const fieldParams = fields.join(',');
-  return axiosInstance.get(`api/admin/states?type=combo&fields=${fieldParams}`);
-};
-
 // Add a new state
 export const addState = (payload) => {
   return axiosInstance.post('api/admin/states', payload);

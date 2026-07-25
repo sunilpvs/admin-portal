@@ -1,200 +1,128 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import EmployeeForm from "./EmployeeForm";
 import EmployeeTable from "./EmployeeTable";
+import EmployeeViewModal from "./EmployeeViewModal";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-hot-toast";
 
-const API_URL = "http://localhost:5000/api/employees";
+import { AppContext } from "../../context/AppContext";
+import {
+  addEmployee,
+  getEmployeeById,
+  getEmployees,
+} from "../../services/hr/employeeService";
+
+const getInitialFormData = () => ({
+  entityId: "",
+  departmentId: "",
+  designationId: "",
+  firstName: "",
+  lastName: "",
+  displayName: "",
+  dob: "",
+  personalEmail: "",
+  mobileNo: "",
+  employeeType: "Regular",
+  joiningDate: new Date().toISOString().split("T")[0],
+  exitDate: "",
+  add1: "",
+  add2: "",
+  countryId: "",
+  stateId: "",
+  cityId: "",
+  pin: "",
+  uan: "",
+  aadharNo: "",
+  panNo: "",
+  esiNo: "",
+  bankName: "",
+  accountNo: "",
+  ifscCode: "",
+  m365Required: false,
+  officialEmail: "",
+  domain: "",
+  oldEmpCode: "",
+});
 
 const Employee = () => {
-  const [allEmployees, setAllEmployees] = useState([]);
+  const { userData } = useContext(AppContext);
 
+  const [employees, setEmployees] = useState([]);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [openForm, setOpenForm] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const [selectedEmployee, setSelectedEmployee] =
-    useState(null);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [viewEmployee, setViewEmployee] = useState(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
-  /* =====================================================
-     FETCH EMPLOYEES
-  ===================================================== */
+  const fetchEmployees = useCallback(async (pageOverride, limitOverride) => {
+    const activePage = pageOverride ?? page;
+    const activeLimit = limitOverride ?? limit;
 
-  const fetchEmployees = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(
-        `${API_URL}?page=1&limit=1000`
-      );
-
-      setAllEmployees(
-        response.data.employees ||
-          response.data.data ||
-          []
-      );
+      const response = await getEmployees(activePage, activeLimit);
+      setEmployees(response.employees || []);
+      setTotal(response.total || 0);
     } catch (error) {
-      console.error(
-        "Failed to fetch employees:",
-        error
-      );
-
-      toast.error(
-        "Failed to load employees"
-      );
+      console.error("Failed to fetch employees:", error);
+      toast.error("Failed to load employees");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  /* =====================================================
-     LOAD EMPLOYEES ON PAGE LOAD
-  ===================================================== */
+  }, [page, limit]);
 
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [fetchEmployees]);
 
-  /* =====================================================
-     DELETE EMPLOYEE
-  ===================================================== */
-
-  const handleDelete = async (id) => {
+  const handleSubmit = async (payload) => {
     try {
-      await axios.delete(
-        `${API_URL}/${id}`
-      );
-
-      toast.success(
-        "Employee deleted successfully"
-      );
-
-      fetchEmployees();
-    } catch (error) {
-      console.error(
-        "Delete failed:",
-        error
-      );
-
-      toast.error(
-        "Failed to delete employee"
-      );
-    }
-  };
-
-  /* =====================================================
-     ADD / UPDATE EMPLOYEE
-  ===================================================== */
-
-  const handleSubmit = async (formData) => {
-    try {
-      if (editMode) {
-        await axios.put(
-          `${API_URL}/${formData.id}`,
-          formData
-        );
-
-        toast.success(
-          "Employee updated successfully"
-        );
-      } else {
-        await axios.post(
-          API_URL,
-          formData
-        );
-
-        toast.success(
-          "Employee Createded Successfully"
-        );
-      }
-
+      const result = await addEmployee(payload);
+      toast.success(result.message || "Employee record added successfully");
       setOpenForm(false);
       setSelectedEmployee(null);
-      setEditMode(false);
-
-      await fetchEmployees();
-
       setPage(1);
+      await fetchEmployees(1, limit);
     } catch (error) {
-      console.error(
-        "Submit failed:",
-        error
-      );
-
-      toast.error(
-        "Failed to save employee"
-      );
+      console.error("Submit failed:", error);
+      const message =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Failed to save employee";
+      toast.error(message);
     }
   };
 
-  /* =====================================================
-     EDIT EMPLOYEE
-  ===================================================== */
-
-  const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-
-    setEditMode(true);
-
-    setOpenForm(true);
-  };
-
-  /* =====================================================
-     ADD EMPLOYEE
-  ===================================================== */
-
   const handleAdd = () => {
-    setSelectedEmployee({
-      entityId: "",
-      departmentId: "",
-      designationId: "",
-
-      firstName: "",
-      lastName: "",
-      displayName: "",
-
-      dob: "",
-      personalEmail: "",
-      mobileNo: "",
-
-      employeeType: "Regular",
-
-      joiningDate: new Date()
-        .toISOString()
-        .split("T")[0],
-
-      expiryDate: "",
-
-      add1: "",
-      add2: "",
-
-      countryId: "",
-      stateId: "",
-      cityId: "",
-
-      pin: "",
-
-      uan: "",
-      aadharNo: "",
-      panNo: "",
-      esiNo: "",
-
-      bankName: "",
-      accountNo: "",
-      ifscCode: "",
-    });
-
-    setEditMode(false);
-
+    setSelectedEmployee(getInitialFormData());
     setOpenForm(true);
   };
 
-  /* =====================================================
-     PAGINATION
-  ===================================================== */
+  const handleView = async (id) => {
+    setOpenViewModal(true);
+    setViewEmployee(null);
+    setViewLoading(true);
+
+    try {
+      const employee = await getEmployeeById(id);
+      setViewEmployee(employee || null);
+    } catch (error) {
+      console.error("Failed to fetch employee details:", error);
+      toast.error("Failed to load employee details");
+      setOpenViewModal(false);
+    } finally {
+      setViewLoading(false);
+    }
+  };
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -202,41 +130,28 @@ const Employee = () => {
 
   const handleLimitChange = (newLimit) => {
     setLimit(newLimit);
-
     setPage(1);
   };
-
-  /* =====================================================
-     SEARCH
-  ===================================================== */
 
   const handleSearchChange = (newSearch) => {
     setSearchTerm(newSearch);
-
     setPage(1);
   };
 
-  /* =====================================================
-     CLOSE FORM
-  ===================================================== */
-
   const closeForm = () => {
     setOpenForm(false);
-
     setSelectedEmployee(null);
+  };
 
-    setEditMode(false);
+  const closeViewModal = () => {
+    setOpenViewModal(false);
+    setViewEmployee(null);
   };
 
   return (
     <div className="container-fluid mt-4">
-
       <div className="row justify-content-center">
-
         <div className="col-md-12">
-
-          {/* ADD EMPLOYEE BUTTON */}
-
           <button
             className="btn btn-primary float-end mt-4"
             onClick={handleAdd}
@@ -244,35 +159,37 @@ const Employee = () => {
             + Create Employee
           </button>
 
-          {/* EMPLOYEE TABLE */}
-
           <EmployeeTable
-            employees={allEmployees}
-            deleteEmployee={handleDelete}
-            editEmployee={handleEdit}
+            employees={employees}
+            total={total}
             currentPage={page}
             itemsPerPage={limit}
+            loading={loading}
             onPageChange={handlePageChange}
             onLimitChange={handleLimitChange}
             onSearch={handleSearchChange}
             searchTerm={searchTerm}
+            onView={handleView}
           />
-
-          {/* EMPLOYEE FORM */}
 
           {openForm && (
             <EmployeeForm
               data={selectedEmployee}
               add={handleSubmit}
               close={closeForm}
-              editMode={editMode}
+              userData={userData}
             />
           )}
 
+          {openViewModal && (
+            <EmployeeViewModal
+              employee={viewEmployee}
+              loading={viewLoading}
+              close={closeViewModal}
+            />
+          )}
         </div>
-
       </div>
-
     </div>
   );
 };

@@ -10,6 +10,16 @@ export const getDepartmentById = (id) => {
   return axiosInstance.get(`api/admin/department?id=${id}`);
 };
 
+export const getDepartmentCombo = async () => {
+  try {
+    const response = await axiosInstance.get(`api/admin/department?type=combo`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching department combo list:", error);
+    throw error;
+  }
+}
+
 // Add a new department (JSON payload) or bulk import (FormData with 'file' key)
 export const addDepartment = (payload) => {
   const config =
