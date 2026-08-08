@@ -33,6 +33,7 @@ const getInitialFormData = () => ({
   stateId: "",
   cityId: "",
   pin: "",
+  officeLocationId: "",
   uan: "",
   aadharNo: "",
   panNo: "",

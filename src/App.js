@@ -11,6 +11,7 @@ import Calendar from "./pages/calendar";
 import City from "./pages/city/City";
 import State from "./pages/state/State";
 import Country from "./pages/country/Country";
+import OfficeLocation from "./pages/officeLocation/OfficeLocation";
 import Designation from "./pages/designation/Designation";
 import Department from "./pages/department/Department";
 
@@ -94,6 +95,7 @@ const AppRoutes = () => (
             <Route path="city" element={<City />} />
             <Route path="state" element={<State />} />
             <Route path="country" element={<Country />} />
+            <Route path="office-locations" element={<OfficeLocation />} />
             <Route path="department" element={<Department />} />
             <Route path="designation" element={<Designation />} />
             <Route path="status" element={<Status />} />

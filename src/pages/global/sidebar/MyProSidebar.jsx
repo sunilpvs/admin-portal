@@ -20,6 +20,7 @@ import SwitchLeftOutlinedIcon from "@mui/icons-material/SwitchLeftOutlined";
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import MapIcon from '@mui/icons-material/Map';
 import PublicIcon from '@mui/icons-material/Public';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import BusinessIcon from '@mui/icons-material/Business';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
@@ -328,6 +329,14 @@ const MyProSidebar = () => {
         title="Country"
         to="/country"
         icon={<PublicIcon />}
+        selected={selected}
+        setSelected={setSelected}
+    />
+
+    <Item
+        title="Office Locations"
+        to="/office-locations"
+        icon={<LocationOnOutlinedIcon />}
         selected={selected}
         setSelected={setSelected}
     />

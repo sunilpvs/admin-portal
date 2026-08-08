@@ -8,6 +8,7 @@ import { getCityCombo } from "../../services/admin/cityService";
 import { getEntityCombo, getDomainsCombo } from "../../services/admin/entityService";
 import { getDepartmentCombo } from "../../services/admin/departmentService";
 import { getDesignationCombo } from "../../services/admin/designationService";
+import { getOfficeLocationCombo } from "../../services/admin/officeLocationService";
 import {
   checkDuplicateEmail,
 } from "../../services/hr/employeeService";
@@ -56,6 +57,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
     stateId: "",
     cityId: "",
     pin: "",
+    officeLocationId: "",
     uan: "",
     aadharNo: "",
     panNo: "",
@@ -75,6 +77,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [cities, setCities] = useState([]);
+  const [officeLocations, setOfficeLocations] = useState([]);
   const [domains, setDomains] = useState([]);
 
   const [emailCheckStatus, setEmailCheckStatus] = useState(null);
@@ -103,6 +106,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
         stateId: data.stateId || "",
         cityId: data.cityId || "",
         pin: data.pin || "",
+        officeLocationId: data.officeLocationId || data.office_location_id || "",
         uan: data.uan || "",
         aadharNo: data.aadharNo || "",
         panNo: data.panNo || "",
@@ -129,6 +133,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
         stateData,
         countryData,
         cityData,
+        officeLocationData,
         domainsData,
       ] = await Promise.all([
         getEntityCombo(["id", "entity_name"]),
@@ -137,6 +142,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
         getStateCombo(["id", "state"]),
         getCountryCombo(["id", "country"]),
         getCityCombo(["id", "city"]),
+        getOfficeLocationCombo(),
         getDomainsCombo(),
       ]);
 
@@ -146,6 +152,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
       setStates(normalizeCombo(stateData.data));
       setCountries(normalizeCombo(countryData.data));
       setCities(normalizeCombo(cityData.data));
+      setOfficeLocations(normalizeCombo(officeLocationData.data));
       setDomains(normalizeDomains(domainsData.data));
     } catch (error) {
       console.error("Failed to load dropdowns:", error);
@@ -285,6 +292,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
       city: parseInt(formData.cityId, 10),
       state: parseInt(formData.stateId, 10),
       pin: formData.pin,
+      office_location_id: parseInt(formData.officeLocationId, 10),
       country: parseInt(formData.countryId, 10),
       add1: formData.add1,
       add2: formData.add2,
@@ -709,6 +717,24 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     className="form-control"
                     required
                   />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Office Location</label>
+                  <select
+                    name="officeLocationId"
+                    value={formData.officeLocationId || ""}
+                    onChange={handleChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Select Office Location</option>
+                    {officeLocations.map((officeLocation) => (
+                      <option key={officeLocation.id} value={officeLocation.id}>
+                        {officeLocation.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
