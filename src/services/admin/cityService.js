@@ -11,6 +11,7 @@ export const getCityById = (id) => {
     return axiosInstance.get(`api/admin/cities?id=${id}`);
 };
 
+
 // export const getCityCombo = (fields = ['id', 'city']) => {
 //     const params = new URLSearchParams();
 //     params.append("type", "combo");
