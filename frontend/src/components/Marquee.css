@@ -1,0 +1,30 @@
+.marquee {
+  overflow: hidden;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  margin-top: 3.5rem;
+  background: var(--accent);
+  border-top: 1px solid #1e1e1e;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-item {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 0 2rem;
+  color: var(--bg);
+}
+
+.marquee-dot {
+  margin: 0 2rem;
+  opacity: 0.4;
+  color: var(--bg);
+}
