@@ -71,6 +71,8 @@ const EmployeeViewModal = ({ employee, loading, close }) => {
                   <DetailField label="Email" value={employee.email} />
                   <DetailField label="Personal Email" value={employee.personal_email} />
                   <DetailField label="Mobile" value={employee.mobile} />
+                  <DetailField label="Employee Code" value={employee.emp_code || employee.old_emp_code} />
+                  <DetailField label="Employee Status" value={employee.emp_status === 1 || employee.emp_status === "1" ? "Active" : employee.emp_status === 0 || employee.emp_status === "0" ? "Inactive" : employee.emp_status || "—"} />
                   <DetailField label="Employee Type" value={employee.emp_type} />
                   <DetailField label="Joining Date" value={employee.joining_date} />
                   <DetailField label="Exit Date" value={employee.exit_date} />

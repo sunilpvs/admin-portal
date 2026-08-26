@@ -17,6 +17,16 @@ const getMobile = (employee) => employee.mobile || "—";
 
 const getEmployeeCode = (employee) => employee.old_emp_code || employee.emp_code || "—";
 
+const getEmployeeStatus = (employee) => {
+  const status = employee.emp_status;
+
+  if (status === 1 || status === "1" || status === "Active") return "Active";
+  if (status === 0 || status === "0" || status === "Inactive") return "Inactive";
+  if (status === "Pending") return "Pending";
+
+  return status || "—";
+};
+
 function EmployeeTable({
   employees,
   total,
@@ -43,12 +53,14 @@ function EmployeeTable({
       const email = getEmail(employee).toLowerCase();
       const mobile = getMobile(employee).toLowerCase();
       const empCode = getEmployeeCode(employee).toLowerCase();
+      const empStatus = getEmployeeStatus(employee).toLowerCase();
 
       return (
         displayName.includes(search) ||
         email.includes(search) ||
         mobile.includes(search) ||
-        empCode.includes(search)
+        empCode.includes(search) ||
+        empStatus.includes(search)
       );
     });
   }, [employees, searchTerm]);
@@ -73,6 +85,9 @@ function EmployeeTable({
       } else if (key === "emp_code") {
         valueA = getEmployeeCode(a).toLowerCase();
         valueB = getEmployeeCode(b).toLowerCase();
+      } else if (key === "emp_status") {
+        valueA = getEmployeeStatus(a).toLowerCase();
+        valueB = getEmployeeStatus(b).toLowerCase();
       }
 
       if (valueA < valueB) return -1 * dir;
@@ -256,6 +271,15 @@ function EmployeeTable({
                     {getSortArrow("emp_code")}
                   </span>
                 </th>
+                <th
+                  onClick={() => handleSort("emp_status")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Status{" "}
+                  <span className="float-end">
+                    {getSortArrow("emp_status")}
+                  </span>
+                </th>
                 <th style={{ display: "none" }}>ID</th>
                 <th>View</th>
               </tr>
@@ -282,6 +306,7 @@ function EmployeeTable({
                     <td>{getEmail(data)}</td>
                     <td>{getMobile(data)}</td>
                     <td>{getEmployeeCode(data)}</td>
+                    <td>{getEmployeeStatus(data)}</td>
                     <td style={{ display: "none" }}>{data.id}</td>
                     <td>
                       <button

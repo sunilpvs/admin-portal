@@ -44,6 +44,21 @@ export const addEmployee = async (payload) => {
     }
 };
 
+export const importEmployeesFromExcel = async (formData) => {
+    try {
+        const response = await axiosInstance.post('api/hr/employee', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    }
+    catch (error) {
+        console.error('Error importing employees from Excel:', error);
+        throw error;
+    }
+};
+
 export const checkDuplicateEmail = async (email) => {
     try {
         const response = await axiosInstance.get(

@@ -3,6 +3,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import EmployeeForm from "./EmployeeForm";
 import EmployeeTable from "./EmployeeTable";
 import EmployeeViewModal from "./EmployeeViewModal";
+import EmployeeImportModal from "./EmployeeImportModal";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-hot-toast";
@@ -59,6 +60,7 @@ const Employee = () => {
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const [openViewModal, setOpenViewModal] = useState(false);
   const [viewEmployee, setViewEmployee] = useState(null);
@@ -153,12 +155,20 @@ const Employee = () => {
     <div className="container-fluid mt-4">
       <div className="row justify-content-center">
         <div className="col-md-12">
-          <button
-            className="btn btn-primary float-end mt-4"
-            onClick={handleAdd}
-          >
-            + Create Employee
-          </button>
+          <div className="d-flex justify-content-end gap-2 mt-4 flex-wrap">
+            <button
+              className="btn btn-outline-success"
+              onClick={() => setOpenImportModal(true)}
+            >
+              Import Employees
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={handleAdd}
+            >
+              + Create Employee
+            </button>
+          </div>
 
           <EmployeeTable
             employees={employees}
@@ -179,6 +189,13 @@ const Employee = () => {
               add={handleSubmit}
               close={closeForm}
               userData={userData}
+            />
+          )}
+
+          {openImportModal && (
+            <EmployeeImportModal
+              close={() => setOpenImportModal(false)}
+              onImportComplete={() => fetchEmployees(1, limit)}
             />
           )}
 
