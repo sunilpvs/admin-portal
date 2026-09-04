@@ -38,6 +38,7 @@ function EmployeeTable({
   onSearch,
   searchTerm,
   onView,
+  onEdit,
 }) {
   const [sortConfig, setSortConfig] = useState({
     key: "displayName",
@@ -281,7 +282,7 @@ function EmployeeTable({
                   </span>
                 </th>
                 <th style={{ display: "none" }}>ID</th>
-                <th>View</th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -311,7 +312,14 @@ function EmployeeTable({
                     <td>
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary"
+                        className="btn btn-sm btn-outline-primary me-2"
+                        onClick={() => onEdit(data.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
                         title="View employee details"
                         onClick={() => onView(data.id)}
                       >
@@ -378,6 +386,7 @@ EmployeeTable.propTypes = {
   onSearch: PropTypes.func.isRequired,
   searchTerm: PropTypes.string.isRequired,
   onView: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 export default EmployeeTable;

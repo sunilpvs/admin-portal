@@ -13,6 +13,7 @@ import {
   addEmployee,
   getEmployeeById,
   getEmployees,
+  updateEmployee,
 } from "../../services/hr/employeeService";
 
 const getInitialFormData = () => ({
@@ -48,6 +49,56 @@ const getInitialFormData = () => ({
   oldEmpCode: "",
 });
 
+const normalizeEmployeeType = (employeeType) => {
+  if (String(employeeType || "").toLowerCase() === "contract") {
+    return "Contract";
+  }
+
+  return "Regular";
+};
+
+const getFormDataFromEmployee = (employee) => ({
+  id: employee.id || employee.employee_id || "",
+  entityId: employee.entity_id || employee.entityId || "",
+  departmentId: employee.department_id || employee.departmentId || "",
+  designationId: employee.designation_id || employee.designationId || "",
+  firstName: employee.first_name || employee.firstName || "",
+  lastName: employee.last_name || employee.lastName || "",
+  displayName: employee.display_name || employee.displayName || "",
+  dob: employee.dob || "",
+  personalEmail: employee.personal_email || employee.personalEmail || "",
+  mobileNo: employee.mobile || employee.mobile_no || employee.mobileNo || "",
+  employeeType: normalizeEmployeeType(employee.emp_type || employee.employeeType),
+  joiningDate: employee.join_date || employee.joining_date || employee.joiningDate || "",
+  exitDate: employee.exit_date || employee.exitDate || "",
+  add1: employee.add1 || "",
+  add2: employee.add2 || "",
+  countryId: employee.country_id || employee.countryId || "",
+  stateId: employee.state_id || employee.stateId || "",
+  cityId: employee.city_id || employee.cityId || "",
+  pin: employee.pin || "",
+  officeLocationId: employee.office_location_id || employee.officeLocationId || "",
+  uan: employee.uan || "",
+  aadharNo: employee.aadhar || employee.aadhar_no || "",
+  panNo: employee.pan_no || employee.pan || "",
+  esiNo:
+    ["NA", "N/A"].includes(
+      String(employee.esi_no || employee.esi || "").trim().toUpperCase()
+    )
+      ? ""
+      : employee.esi_no || employee.esi || "",
+  bankName: employee.bank_name || employee.bankName || "",
+  accountNo: employee.bank_account_no || employee.accountNo || "",
+  ifscCode: employee.ifsc_code || employee.ifscCode || "",
+  m365Required:
+    String(employee.m365 || "").toLowerCase() === "yes" ||
+    employee.m365 === 1 ||
+    employee.m365 === true,
+  officialEmail: employee.email ? employee.email.split("@")[0] : "",
+  domain: employee.email?.includes("@") ? employee.email.split("@")[1] : "",
+  oldEmpCode: employee.old_emp_code || employee.oldEmpCode || "",
+});
+
 const Employee = () => {
   const { userData } = useContext(AppContext);
 
@@ -60,6 +111,7 @@ const Employee = () => {
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [editMode, setEditMode] = useState(false);
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const [openViewModal, setOpenViewModal] = useState(false);
@@ -89,10 +141,18 @@ const Employee = () => {
 
   const handleSubmit = async (payload) => {
     try {
-      const result = await addEmployee(payload);
-      toast.success(result.message || "Employee record added successfully");
+      const result = editMode
+        ? await updateEmployee(selectedEmployee.id, payload)
+        : await addEmployee(payload);
+      toast.success(
+        result.message ||
+          (editMode
+            ? "Employee record updated successfully"
+            : "Employee record added successfully")
+      );
       setOpenForm(false);
       setSelectedEmployee(null);
+      setEditMode(false);
       setPage(1);
       await fetchEmployees(1, limit);
     } catch (error) {
@@ -107,7 +167,25 @@ const Employee = () => {
 
   const handleAdd = () => {
     setSelectedEmployee(getInitialFormData());
+    setEditMode(false);
     setOpenForm(true);
+  };
+
+  const handleEdit = async (id) => {
+    try {
+      const employee = await getEmployeeById(id);
+      if (!employee) {
+        toast.error("Employee details not found");
+        return;
+      }
+
+      setSelectedEmployee(getFormDataFromEmployee(employee));
+      setEditMode(true);
+      setOpenForm(true);
+    } catch (error) {
+      console.error("Failed to fetch employee for editing:", error);
+      toast.error("Failed to load employee details");
+    }
   };
 
   const handleView = async (id) => {
@@ -144,6 +222,7 @@ const Employee = () => {
   const closeForm = () => {
     setOpenForm(false);
     setSelectedEmployee(null);
+    setEditMode(false);
   };
 
   const closeViewModal = () => {
@@ -181,6 +260,7 @@ const Employee = () => {
             onSearch={handleSearchChange}
             searchTerm={searchTerm}
             onView={handleView}
+            onEdit={handleEdit}
           />
 
           {openForm && (
@@ -189,6 +269,7 @@ const Employee = () => {
               add={handleSubmit}
               close={closeForm}
               userData={userData}
+              editMode={editMode}
             />
           )}
 

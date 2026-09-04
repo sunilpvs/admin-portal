@@ -13,6 +13,7 @@ import {
   checkDuplicateEmail,
 } from "../../services/hr/employeeService";
 
+
 const normalizeCombo = (response) => {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data)) return response.data;
@@ -35,7 +36,15 @@ const normalizeDomains = (response) => {
     .filter(Boolean);
 };
 
-const EmployeeForm = ({ data, add, close, userData }) => {
+const normalizeEmployeeType = (employeeType) => {
+  if (String(employeeType || "").toLowerCase() === "contract") {
+    return "Contract";
+  }
+
+  return "Regular";
+};
+
+const EmployeeForm = ({ data, add, close, userData, editMode }) => {
   const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
@@ -82,42 +91,55 @@ const EmployeeForm = ({ data, add, close, userData }) => {
 
   const [emailCheckStatus, setEmailCheckStatus] = useState(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [initialOfficialEmail, setInitialOfficialEmail] = useState("");
 
   useEffect(() => {
     if (data) {
+      const officialEmail = data.email || "";
+      setInitialOfficialEmail(officialEmail);
       setFormData({
-        entityId: data.entityId || "",
-        departmentId: data.departmentId || "",
-        designationId: data.designationId || "",
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
+        entityId: data.entityId || data.entity_id || "",
+        departmentId: data.departmentId || data.department_id || "",
+        designationId: data.designationId || data.designation_id || "",
+        firstName: data.firstName || data.first_name || "",
+        lastName: data.lastName || data.last_name || "",
         displayName:
           data.displayName ||
           `${data.firstName || ""} ${data.lastName || ""}`.trim(),
         dob: data.dob || "",
-        personalEmail: data.personalEmail || "",
-        mobileNo: data.mobileNo || "",
-        employeeType: data.employeeType || "Regular",
-        joiningDate: data.joiningDate || today,
+        personalEmail: data.personalEmail || data.personal_email || "",
+        mobileNo: data.mobileNo || data.mobile || "",
+        employeeType: normalizeEmployeeType(data.employeeType || data.emp_type),
+        joiningDate: data.joiningDate || data.join_date || data.joining_date || today,
         exitDate: data.exitDate || "",
         add1: data.add1 || "",
         add2: data.add2 || "",
-        countryId: data.countryId || "",
-        stateId: data.stateId || "",
-        cityId: data.cityId || "",
+        countryId: data.countryId || data.country_id || "",
+        stateId: data.stateId || data.state_id || "",
+        cityId: data.cityId || data.city_id || "",
         pin: data.pin || "",
         officeLocationId: data.officeLocationId || data.office_location_id || "",
         uan: data.uan || "",
-        aadharNo: data.aadharNo || "",
-        panNo: data.panNo || "",
-        esiNo: data.esiNo || "",
-        bankName: data.bankName || "",
-        accountNo: data.accountNo || "",
-        ifscCode: data.ifscCode || "",
-        m365Required: data.m365Required || false,
-        officialEmail: data.officialEmail || "",
-        domain: data.domain || "",
-        oldEmpCode: data.oldEmpCode || "",
+        aadharNo: data.aadharNo || data.aadhar || "",
+        panNo: data.panNo || data.pan_no || data.pan || "",
+        esiNo:
+          ["NA", "N/A"].includes(
+            String(data.esiNo || data.esi_no || data.esi || "")
+              .trim()
+              .toUpperCase()
+          )
+            ? ""
+            : data.esiNo || data.esi_no || data.esi || "",
+        bankName: data.bankName || data.bank_name || "",
+        accountNo: data.accountNo || data.bank_account_no || "",
+        ifscCode: data.ifscCode || data.ifsc_code || "",
+        m365Required:
+          data.m365Required ||
+          String(data.m365 || "").toLowerCase() === "yes" ||
+          data.m365 === 1,
+        officialEmail: data.officialEmail || (data.email ? data.email.split("@")[0] : ""),
+        domain: data.domain || (data.email?.includes("@") ? data.email.split("@")[1] : ""),
+        oldEmpCode: data.oldEmpCode || data.old_emp_code || "",
       });
     }
 
@@ -254,7 +276,15 @@ const EmployeeForm = ({ data, add, close, userData }) => {
       return;
     }
 
-    if (formData.m365Required && emailCheckStatus === "exists") {
+    const officialEmail = formData.m365Required
+      ? getFullOfficialEmail(formData.officialEmail, formData.domain)
+      : formData.personalEmail;
+
+    if (
+      formData.m365Required &&
+      emailCheckStatus === "exists" &&
+      officialEmail !== initialOfficialEmail
+    ) {
       toast.error("Official email already exists");
       return;
     }
@@ -278,10 +308,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
       toast.error("Aadhar Number must contain exactly 12 digits");
       return;
     }
-
-    const officialEmail = formData.m365Required
-      ? getFullOfficialEmail(formData.officialEmail, formData.domain)
-      : formData.personalEmail;
 
     const payload = {
       f_name: formData.firstName.trim(),
@@ -353,7 +379,9 @@ const EmployeeForm = ({ data, add, close, userData }) => {
         >
           <form onSubmit={handleSubmit}>
             <div className="modal-header">
-              <h5 className="modal-title">Create Employee</h5>
+              <h5 className="modal-title">
+                {editMode ? "Edit Employee" : "Create Employee"}
+              </h5>
               <button type="button" className="btn-close" onClick={close} />
             </div>
 
@@ -375,7 +403,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.entityId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select Entity</option>
                     {entities.map((entity) => (
@@ -393,7 +420,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.departmentId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select Department</option>
                     {departments.map((department) => (
@@ -411,7 +437,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.designationId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select Designation</option>
                     {designations.map((designation) => (
@@ -430,7 +455,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.firstName}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -442,7 +466,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.lastName}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -465,7 +488,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.dob}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -477,7 +499,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.personalEmail}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -496,7 +517,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     }}
                     className="form-control"
                     maxLength={12}
-                    required
                   />
                 </div>
 
@@ -507,7 +527,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.employeeType}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="Regular">Regular</option>
                     <option value="Contract">Contract</option>
@@ -522,16 +541,12 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.joiningDate}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
                 <div className="col-md-4 mb-3">
                   <label className="form-label">
                     Exit Date
-                    {formData.employeeType === "Contract" && (
-                      <span className="text-danger"> *</span>
-                    )}
                   </label>
                   <input
                     type="date"
@@ -540,7 +555,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     onChange={handleChange}
                     className="form-control"
                     min={formData.joiningDate}
-                    required={formData.employeeType === "Contract"}
                     disabled={formData.employeeType !== "Contract"}
                   />
                 </div>
@@ -553,7 +567,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.oldEmpCode}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -591,7 +604,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                               : ""
                         }`}
                         placeholder="firstname.lastname"
-                        required={formData.m365Required}
                       />
                       <span className="input-group-text">@</span>
                       <select
@@ -600,7 +612,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                         onChange={handleChange}
                         className="form-select"
                         style={{ maxWidth: "180px" }}
-                        required={formData.m365Required}
                       >
                         <option value="">Domains</option>
                         {domains.map((domain, index) => (
@@ -638,7 +649,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.add1}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -660,7 +670,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.countryId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select Country</option>
                     {countries.map((country) => (
@@ -678,7 +687,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.stateId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select State</option>
                     {states.map((state) => (
@@ -696,7 +704,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.cityId}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select City</option>
                     {cities.map((city) => (
@@ -715,7 +722,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.pin}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -726,7 +732,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.officeLocationId || ""}
                     onChange={handleChange}
                     className="form-select"
-                    required
                   >
                     <option value="">Select Office Location</option>
                     {officeLocations.map((officeLocation) => (
@@ -758,7 +763,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     }}
                     className="form-control"
                     maxLength={16}
-                    required
                   />
                 </div>
 
@@ -778,7 +782,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     className="form-control"
                     placeholder="Enter UAN"
                     maxLength={14}
-                    required
                   />
                 </div>
 
@@ -790,7 +793,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.panNo}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -810,7 +812,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     className="form-control"
                     placeholder="Enter ESI Number"
                     maxLength={15}
-                    required
                   />
                 </div>
               </div>
@@ -826,7 +827,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.bankName}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -838,7 +838,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.accountNo}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
 
@@ -850,7 +849,6 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                     value={formData.ifscCode}
                     onChange={handleChange}
                     className="form-control"
-                    required
                   />
                 </div>
               </div>
@@ -862,7 +860,7 @@ const EmployeeForm = ({ data, add, close, userData }) => {
                 className="btn btn-success"
                 disabled={isSubmitDisabled}
               >
-                Save
+                {editMode ? "Update" : "Save"}
               </button>
 
               <button type="button" className="btn btn-secondary" onClick={close}>
@@ -881,6 +879,7 @@ EmployeeForm.propTypes = {
   add: PropTypes.func.isRequired,
   close: PropTypes.func.isRequired,
   userData: PropTypes.object,
+  editMode: PropTypes.bool,
 };
 
 export default EmployeeForm;

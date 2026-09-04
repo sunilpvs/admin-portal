@@ -85,6 +85,10 @@ const EmployeeViewModal = ({ employee, loading, close }) => {
                   <DetailField label="Entity" value={employee.entity_name} />
                   <DetailField label="Department" value={employee.department} />
                   <DetailField label="Designation" value={employee.designation} />
+                  <DetailField
+                    label="Office Location"
+                    value={employee.office_location}
+                  />
                 </div>
 
                 <h5 className="border-bottom pb-2 mb-3 mt-4">Address</h5>

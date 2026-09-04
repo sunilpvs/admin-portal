@@ -44,6 +44,16 @@ export const addEmployee = async (payload) => {
     }
 };
 
+export const updateEmployee = async (id, payload) => {
+    try {
+        const response = await axiosInstance.put(`api/hr/employee?id=${id}`, payload);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating employee:', error);
+        throw error;
+    }
+};
+
 export const importEmployeesFromExcel = async (formData) => {
     try {
         const response = await axiosInstance.post('api/hr/employee', formData, {
